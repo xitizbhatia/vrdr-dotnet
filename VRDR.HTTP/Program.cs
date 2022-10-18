@@ -12,7 +12,7 @@ namespace VRDR.HTTP
 
         public Program()
         {
-            Listener = new VRDRListener(SendResponse, "http://*:8080/");
+            Listener = new VRDRListener(SendResponse, "http://*:8085/");
         }
 
         public void Start()
