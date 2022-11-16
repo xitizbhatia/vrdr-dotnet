@@ -59,6 +59,7 @@ namespace VRDR.CLI
   - void: Creates a Void message for a Death Record (1 argument: FHIR death record; one optional argument: number of records to void)
   - xml2json: Read in the IJE death record and print out as JSON (1 argument: path to death record in XML format)
   - xml2xml: Read in the IJE death record and print out as XML (1 argument: path to death record in XML format)
+  - batch: Read in IJE messages and create a batch submission bundle (2+ arguments: submission URL (for inside bundle) and one or more messages)
 ";
         static int Main(string[] args)
         {
@@ -903,6 +904,11 @@ namespace VRDR.CLI
                 if (args.Length == 2)
                 {
                     DeathRecord d = new DeathRecord(File.ReadAllText(args[1]));
+                    if (d.DeathRecordIdentifier == null)
+                    {
+                        Console.WriteLine("Error: command json2mre requires a Coded Demographic Bundle; did you pass in a message?");
+                        return(1);
+                    }
                     IJEMortality ije = new IJEMortality(d, false);
                     ije.DOD_YR = d.DeathRecordIdentifier.Substring(0, 4);
                     ije.DSTATE = d.DeathRecordIdentifier.Substring(4, 2);
@@ -920,6 +926,11 @@ namespace VRDR.CLI
                 if (args.Length == 2)
                 {
                     DeathRecord d = new DeathRecord(File.ReadAllText(args[1]));
+                    if (d.DeathRecordIdentifier == null)
+                    {
+                        Console.WriteLine("Error: command json2trx requires a Coded Cause Of Death Bundle; did you pass in a message?");
+                        return(1);
+                    }
                     IJEMortality ije = new IJEMortality(d, false);
                     ije.DOD_YR = d.DeathRecordIdentifier.Substring(0, 4);
                     ije.DSTATE = d.DeathRecordIdentifier.Substring(4, 2);
@@ -1065,7 +1076,18 @@ namespace VRDR.CLI
             {
                 string searchsets = File.ReadAllText(args[1]);
                 parseBundle(searchsets);
-
+            }
+            else if (args.Length >= 3 && args[0] == "batch")
+            {
+                string url = args[1];
+                List<BaseMessage> messages = new List<BaseMessage>();
+                for (int i = 2; i < args.Length; i++)
+                {
+                    messages.Add(BaseMessage.Parse(File.ReadAllText(args[i])));
+                }
+                string payload = Client.CreateBulkUploadPayload(messages, url, true);
+                Console.WriteLine(payload);
+                return 0;
             }
             else
             {

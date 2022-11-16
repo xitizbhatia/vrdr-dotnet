@@ -47,9 +47,9 @@ This repository includes .NET (C#) code for
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/HL7/vrdr/">STU2 v1.3</a></td>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9</a></td>
 <td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview11</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview11">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview11"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview11">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview11"> github</a></td>
+<td style="text-align: center;">V4.0.0-preview13</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview13">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview13"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview13">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview13"> github</a></td>
 </tr>
 </tbody>
 </table>
@@ -78,7 +78,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR" Version="4.0.0-preview11" />
+  <PackageReference Include="VRDR" Version="4.0.0-preview13" />
   ...
 </ItemGroup>
 ```
@@ -275,7 +275,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR.Messaging" Version="4.0.0-preview11" />
+  <PackageReference Include="VRDR.Messaging" Version="4.0.0-preview13" />
   ...
 </ItemGroup>
 ```
@@ -493,7 +493,7 @@ POST a FHIR Message to the NVSS API Server with your authenticated client
 ```
   // ... Create a FHIR Message
   BaseMessage msg = new BaseMessage();
-  Boolean success = client.PostMessageAsync(msg);
+  HttpResponseMessage response = client.PostMessageAsync(msg);
   // ... handle success or failure
 ```
 
@@ -504,6 +504,33 @@ GET record responses from the NVSS API Server with your authenticated client
   var content = client.GetMessageResponsesAsync(lastUpdatedStr);
 
   // ...parse the Bundle of Bundles in the content response
+```
+
+Generate a batch Bundle of FHIR Messages for upload to the NVSS API Server
+```
+  // ... Create FHIR Messages and put them into a List
+  List<BaseMessage> messages = new List<BaseMessage>();
+  for (int i = 0; i < 5; i++)
+  {
+    BaseMessage msg = new BaseMessage();
+    messages.Add(msg);
+  }
+  // Create the batch upload JSON
+  string batch = Client.CreateBulkUploadPayload(messages, "/Bundle", true);
+```
+
+POST a batch of FHIR Message to the NVSS API Server with your authenticated client
+```
+  // ... Create FHIR Messages and put them into a List
+  List<BaseMessage> messages = new List<BaseMessage>();
+  for (int i = 0; i < 50; i++)
+  {
+    BaseMessage msg = new BaseMessage();
+    messages.Add(msg);
+  }
+  // POST messages in batches of 20
+  List<HttpResponseMessage> responses = client.PostMessagesAsync(messages, 20);
+  // ... handle success or failure
 ```
 
 ### VRDR.HTTP
