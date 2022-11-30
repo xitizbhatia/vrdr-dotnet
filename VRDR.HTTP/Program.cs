@@ -81,10 +81,10 @@ namespace VRDR.HTTP
                     IJEMortality ije = new IJEMortality(deathRecord);
                     result = ije.ToString();
                     break;
-                case string url when new Regex(@"json$").IsMatch(url): // .json
+                case string url when new Regex(@"json$").IsMatch(url): // .json //ije to json vrdr record 
                     result = deathRecord.ToJSON();
                     break;
-                case string url when new Regex(@"fhir").IsMatch(url): // .fhir
+                case string url when new Regex(@"fhir").IsMatch(url): // .fhir //ije to json vrdr message
                     DeathRecordSubmissionMessage message = new DeathRecordSubmissionMessage(deathRecord);
                     message.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                     result = message.ToJSON(true);
