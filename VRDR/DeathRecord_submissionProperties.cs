@@ -1855,16 +1855,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Year of Birth.</summary>
-        /// <value>the decedent's year of birth</value>
+        /// <value>the decedent's year of birth, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.BirthYear = 1928;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Year of Birth: {ExampleDeathRecord.BirthYear}");</para>
         /// </example>
-        [Property("BirthYear", Property.Types.UInt32, "Decedent Demographics", "Decedent's Year of Birth.", true, IGURL.Decedent, true, 14)]
+        [Property("BirthYear", Property.Types.Int32, "Decedent Demographics", "Decedent's Year of Birth.", true, IGURL.Decedent, true, 14)]
         [FHIRPath("Bundle.entry.resource.where($this is Patient).birthDate", "")]
-        public uint? BirthYear
+        public int? BirthYear
         {
             get
             {
@@ -1885,16 +1885,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Month of Birth.</summary>
-        /// <value>the decedent's month of birth</value>
+        /// <value>the decedent's month of birth, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.BirthMonth = 11;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Month of Birth: {ExampleDeathRecord.BirthMonth}");</para>
         /// </example>
-        [Property("BirthMonth", Property.Types.UInt32, "Decedent Demographics", "Decedent's Month of Birth.", true, IGURL.Decedent, true, 14)]
+        [Property("BirthMonth", Property.Types.Int32, "Decedent Demographics", "Decedent's Month of Birth.", true, IGURL.Decedent, true, 14)]
         [FHIRPath("Bundle.entry.resource.where($this is Patient).birthDate", "")]
-        public uint? BirthMonth
+        public int? BirthMonth
         {
             get
             {
@@ -1915,16 +1915,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Day of Birth.</summary>
-        /// <value>the decedent's dau of birth</value>
+        /// <value>the decedent's day of birth, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.BirthDay = 11;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Day of Birth: {ExampleDeathRecord.BirthDay}");</para>
         /// </example>
-        [Property("BirthDay", Property.Types.UInt32, "Decedent Demographics", "Decedent's Day of Birth.", true, IGURL.Decedent, true, 14)]
+        [Property("BirthDay", Property.Types.Int32, "Decedent Demographics", "Decedent's Day of Birth.", true, IGURL.Decedent, true, 14)]
         [FHIRPath("Bundle.entry.resource.where($this is Patient).birthDate", "")]
-        public uint? BirthDay
+        public int? BirthDay
         {
             get
             {
@@ -1959,7 +1959,7 @@ namespace VRDR
             get
             {
                 // We support this legacy API entrypoint via the new partial date entrypoints
-                if (BirthYear != null && BirthMonth != null && BirthDay != null)
+                if (BirthYear != null && BirthYear != -1 && BirthMonth != null && BirthMonth != -1 && BirthDay != null && BirthDay != -1)
                 {
                     Date result = new Date((int)BirthYear, (int)BirthMonth, (int)BirthDay);
                     return result.ToString();
@@ -1972,9 +1972,9 @@ namespace VRDR
                 DateTimeOffset parsedDate;
                 if (DateTimeOffset.TryParse(value, out parsedDate))
                 {
-                    BirthYear = (uint?)parsedDate.Year;
-                    BirthMonth = (uint?)parsedDate.Month;
-                    BirthDay = (uint?)parsedDate.Day;
+                    BirthYear = parsedDate.Year;
+                    BirthMonth = parsedDate.Month;
+                    BirthDay = parsedDate.Day;
                 }
             }
         }
@@ -2031,9 +2031,11 @@ namespace VRDR
                 {
                     Decedent.Address = new List<Address>();
                 }
+                // Clear out the address since we're replacing it completely, except we need to keep the "WithinCityLimits" extension if present
+                Extension withinCityLimits = Decedent.Address?.FirstOrDefault()?.Extension?.Where(ext => ext.Url == ExtensionURL.WithinCityLimitsIndicator)?.FirstOrDefault();
                 Decedent.Address.Clear();
                 Decedent.Address.Add(DictToAddress(value));
-
+                if (withinCityLimits != null) Decedent.Address.FirstOrDefault().Extension.Add(withinCityLimits);
 
                 // Now encode -
                 //        Address.Country as PH_Country_GEC
@@ -2532,6 +2534,12 @@ namespace VRDR
                         // convert boolean race codes to strings
                         if (booleanRaceCodes.Contains(raceCode))
                         {
+                            if (component.Value == null) {
+                              // If there is no value given, set the race to blank.
+                              var race = Tuple.Create(raceCode, "");
+                              races.Add(race);
+                              continue;
+                            }
 
                             // Todo Find conversion from FhirBoolean to bool
                             string raceBool = ((FhirBoolean)component.Value).ToString();
@@ -4520,20 +4528,21 @@ namespace VRDR
         }
         // The idea here is that we have getters and setters for each of the parts of the death datetime, which get used in IJEMortality.cs
         // These getters and setters 1) use the DeathDateObs Observation 2) get and set values on the PartialDateTime extension using helpers that
-        // can be reused across year, month, etc. 3) interpret null as data being absent, and so set the data absent reason if value is null 4) when
-        // getting, look also in the valueDateTime and return the year from there if it happens to be set (but never bother to set it ourselves)
+        // can be reused across year, month, etc. 3) interpret -1 and null as data being absent (intentionally and unintentially, respectively),
+        // and so set the data absent reason if value is -1 or null 4) when getting, look also in the valueDateTime and return the year from there
+        // if it happens to be set (but never bother to set it ourselves)
 
         /// <summary>Decedent's Year of Death.</summary>
-        /// <value>the decedent's year of death</value>
+        /// <value>the decedent's year of death, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.DeathYear = 2018;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Year of Death: {ExampleDeathRecord.DeathYear}");</para>
         /// </example>
-        [Property("DeathYear", Property.Types.UInt32, "Death Investigation", "Decedent's Year of Death.", true, IGURL.DeathDate, true, 25)]
+        [Property("DeathYear", Property.Types.Int32, "Death Investigation", "Decedent's Year of Death.", true, IGURL.DeathDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='81956-5')", "")]
-        public uint? DeathYear
+        public int? DeathYear
         {
             get
             {
@@ -4555,16 +4564,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Month of Death.</summary>
-        /// <value>the decedent's month of death</value>
+        /// <value>the decedent's month of death, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.DeathMonth = 6;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Month of Death: {ExampleDeathRecord.DeathMonth}");</para>
         /// </example>
-        [Property("DeathMonth", Property.Types.UInt32, "Death Investigation", "Decedent's Month of Death.", true, IGURL.DeathDate, true, 25)]
+        [Property("DeathMonth", Property.Types.Int32, "Death Investigation", "Decedent's Month of Death.", true, IGURL.DeathDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='81956-5')", "")]
-        public uint? DeathMonth
+        public int? DeathMonth
         {
             get
             {
@@ -4585,16 +4594,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Day of Death.</summary>
-        /// <value>the decedent's day of death</value>
+        /// <value>the decedent's day of death, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.DeathDay = 16;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Day of Death: {ExampleDeathRecord.DeathDay}");</para>
         /// </example>
-        [Property("DeathDay", Property.Types.UInt32, "Death Investigation", "Decedent's Day of Death.", true, IGURL.DeathDate, true, 25)]
+        [Property("DeathDay", Property.Types.Int32, "Death Investigation", "Decedent's Day of Death.", true, IGURL.DeathDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='81956-5')", "")]
-        public uint? DeathDay
+        public int? DeathDay
         {
             get
             {
@@ -4614,7 +4623,7 @@ namespace VRDR
             }
         }
         /// <summary>Decedent's Time of Death.</summary>
-        /// <value>the decedent's time of death</value>
+        /// <value>the decedent's time of death, or "-1" if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.DeathTime = "07:15";</para>
@@ -4698,7 +4707,7 @@ namespace VRDR
             get
             {
                 // We support this legacy API entrypoint via the new partial date and time entrypoints
-                if (DeathYear != null && DeathMonth != null && DeathDay != null && DeathTime != null)
+                if (DeathYear != null && DeathYear != -1 && DeathMonth != null && DeathMonth != -1 && DeathDay != null && DeathDay != -1 && DeathTime != null && DeathTime != "-1")
                 {
                     DateTimeOffset parsedTime;
                     if (DateTimeOffset.TryParse(DeathTime, out parsedTime))
@@ -4707,7 +4716,7 @@ namespace VRDR
                         return result.ToString("s");
                     }
                 }
-                else if (DeathYear != null && DeathMonth != null && DeathDay != null)
+                else if (DeathYear != null && DeathYear != -1 && DeathMonth != null && DeathMonth != -1 && DeathDay != null && DeathDay != -1)
                 {
                     DateTime result = new DateTime((int)DeathYear, (int)DeathMonth, (int)DeathDay);
                     return result.ToString("s");
@@ -4720,9 +4729,9 @@ namespace VRDR
                 DateTimeOffset parsedTime;
                 if (DateTimeOffset.TryParse(value, out parsedTime))
                 {
-                    DeathYear = (uint?)parsedTime.Year;
-                    DeathMonth = (uint?)parsedTime.Month;
-                    DeathDay = (uint?)parsedTime.Day;
+                    DeathYear = parsedTime.Year;
+                    DeathMonth = parsedTime.Month;
+                    DeathDay = parsedTime.Day;
                     TimeSpan timeSpan = new TimeSpan(0, parsedTime.Hour, parsedTime.Minute, parsedTime.Second);
                     DeathTime = timeSpan.ToString(@"hh\:mm\:ss");
                 }
@@ -4781,16 +4790,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Year of Surgery.</summary>
-        /// <value>the decedent's year of surgery</value>
+        /// <value>the decedent's year of surgery, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.SurgeryYear = 2018;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Year of Surgery: {ExampleDeathRecord.SurgeryYear}");</para>
         /// </example>
-        [Property("SurgeryYear", Property.Types.UInt32, "Death Investigation", "Decedent's Year of Surgery.", true, IGURL.SurgeryDate, true, 25)]
+        [Property("SurgeryYear", Property.Types.Int32, "Death Investigation", "Decedent's Year of Surgery.", true, IGURL.SurgeryDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='80992-1')", "")]
-        public uint? SurgeryYear
+        public int? SurgeryYear
         {
             get
             {
@@ -4811,16 +4820,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Month of Surgery.</summary>
-        /// <value>the decedent's month of surgery</value>
+        /// <value>the decedent's month of surgery, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.SurgeryMonth = 6;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Month of Surgery: {ExampleDeathRecord.SurgeryMonth}");</para>
         /// </example>
-        [Property("SurgeryMonth", Property.Types.UInt32, "Death Investigation", "Decedent's Month of Surgery.", true, IGURL.SurgeryDate, true, 25)]
+        [Property("SurgeryMonth", Property.Types.Int32, "Death Investigation", "Decedent's Month of Surgery.", true, IGURL.SurgeryDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='80992-1')", "")]
-        public uint? SurgeryMonth
+        public int? SurgeryMonth
         {
             get
             {
@@ -4841,16 +4850,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Day of Surgery.</summary>
-        /// <value>the decedent's day of surgery</value>
+        /// <value>the decedent's day of surgery, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.SurgeryDay = 16;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Day of Surgery: {ExampleDeathRecord.SurgeryDay}");</para>
         /// </example>
-        [Property("SurgeryDay", Property.Types.UInt32, "Death Investigation", "Decedent's Day of Surgery.", true, IGURL.SurgeryDate, true, 25)]
+        [Property("SurgeryDay", Property.Types.Int32, "Death Investigation", "Decedent's Day of Surgery.", true, IGURL.SurgeryDate, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='80992-1')", "")]
-        public uint? SurgeryDay
+        public int? SurgeryDay
         {
             get
             {
@@ -4885,7 +4894,7 @@ namespace VRDR
             get
             {
                 // We support this legacy-style API entrypoint via the new partial date and time entrypoints
-                if (SurgeryYear != null && SurgeryMonth != null && SurgeryDay != null)
+                if (SurgeryYear != null && SurgeryYear != -1 && SurgeryMonth != null && SurgeryMonth != -1 && SurgeryDay != null && SurgeryDay != -1)
                 {
                     Date result = new Date((int)SurgeryYear, (int)SurgeryMonth, (int)SurgeryDay);
                     return result.ToString();
@@ -4898,9 +4907,9 @@ namespace VRDR
                 DateTimeOffset parsedDate;
                 if (DateTimeOffset.TryParse(value, out parsedDate))
                 {
-                    SurgeryYear = (uint?)parsedDate.Year;
-                    SurgeryMonth = (uint?)parsedDate.Month;
-                    SurgeryDay = (uint?)parsedDate.Day;
+                    SurgeryYear = parsedDate.Year;
+                    SurgeryMonth = parsedDate.Month;
+                    SurgeryDay = parsedDate.Day;
                 }
             }
         }
@@ -6195,16 +6204,16 @@ namespace VRDR
 
 
         /// <summary>Decedent's Year of Injury.</summary>
-        /// <value>the decedent's year of injury</value>
+        /// <value>the decedent's year of injury, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.InjuryYear = 2018;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Year of Injury: {ExampleDeathRecord.InjuryYear}");</para>
         /// </example>
-        [Property("InjuryYear", Property.Types.UInt32, "Death Investigation", "Decedent's Year of Injury.", true, IGURL.InjuryIncident, true, 25)]
+        [Property("InjuryYear", Property.Types.Int32, "Death Investigation", "Decedent's Year of Injury.", true, IGURL.InjuryIncident, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='11374-6')", "")]
-        public uint? InjuryYear
+        public int? InjuryYear
         {
             get
             {
@@ -6229,16 +6238,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Month of Injury.</summary>
-        /// <value>the decedent's month of injury</value>
+        /// <value>the decedent's month of injury, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.InjuryMonth = 7;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Month of Injury: {ExampleDeathRecord.InjuryMonth}");</para>
         /// </example>
-        [Property("InjuryMonth", Property.Types.UInt32, "Death Investigation", "Decedent's Month of Injury.", true, IGURL.InjuryIncident, true, 25)]
+        [Property("InjuryMonth", Property.Types.Int32, "Death Investigation", "Decedent's Month of Injury.", true, IGURL.InjuryIncident, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='11374-6')", "")]
-        public uint? InjuryMonth
+        public int? InjuryMonth
         {
             get
             {
@@ -6263,16 +6272,16 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Day of Injury.</summary>
-        /// <value>the decedent's day of injury</value>
+        /// <value>the decedent's day of injury, or -1 if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.InjuryDay = 22;</para>
         /// <para>// Getter:</para>
         /// <para>Console.WriteLine($"Decedent Day of Injury: {ExampleDeathRecord.InjuryDay}");</para>
         /// </example>
-        [Property("InjuryDay", Property.Types.UInt32, "Death Investigation", "Decedent's Day of Injury.", true, IGURL.InjuryIncident, true, 25)]
+        [Property("InjuryDay", Property.Types.Int32, "Death Investigation", "Decedent's Day of Injury.", true, IGURL.InjuryIncident, true, 25)]
         [FHIRPath("Bundle.entry.resource.where($this is Observation).where(code.coding.code='11374-6')", "")]
-        public uint? InjuryDay
+        public int? InjuryDay
         {
             get
             {
@@ -6297,7 +6306,7 @@ namespace VRDR
         }
 
         /// <summary>Decedent's Time of Injury.</summary>
-        /// <value>the decedent's time of injury</value>
+        /// <value>the decedent's time of injury, or "-1" if explicitly unknown, or null if never specified</value>
         /// <example>
         /// <para>// Setter:</para>
         /// <para>ExampleDeathRecord.InjuryTime = "07:15";</para>
@@ -6345,7 +6354,7 @@ namespace VRDR
             get
             {
                 // We support this legacy API entrypoint via the new partial date and time entrypoints
-                if (InjuryYear != null && InjuryMonth != null && InjuryDay != null && InjuryTime != null)
+                if (InjuryYear != null && InjuryYear != -1 && InjuryMonth != null && InjuryMonth != -1 && InjuryDay != null && InjuryDay != -1 && InjuryTime != null && InjuryTime != "-1")
                 {
                     DateTimeOffset parsedTime;
                     if (DateTimeOffset.TryParse(InjuryTime, out parsedTime))
@@ -6354,7 +6363,7 @@ namespace VRDR
                         return result.ToString("s");
                     }
                 }
-                else if (InjuryYear != null && InjuryMonth != null && InjuryDay != null)
+                else if (InjuryYear != null && InjuryYear != -1 && InjuryMonth != null && InjuryMonth != -1 && InjuryDay != null && InjuryDay != -1)
                 {
                     DateTime result = new DateTime((int)InjuryYear, (int)InjuryMonth, (int)InjuryDay);
                     return result.ToString("s");
@@ -6367,9 +6376,9 @@ namespace VRDR
                 DateTimeOffset parsedTime;
                 if (DateTimeOffset.TryParse(value, out parsedTime))
                 {
-                    InjuryYear = (uint?)parsedTime.Year;
-                    InjuryMonth = (uint?)parsedTime.Month;
-                    InjuryDay = (uint?)parsedTime.Day;
+                    InjuryYear = parsedTime.Year;
+                    InjuryMonth = parsedTime.Month;
+                    InjuryDay = parsedTime.Day;
                     TimeSpan timeSpan = new TimeSpan(0, parsedTime.Hour, parsedTime.Minute, parsedTime.Second);
                     InjuryTime = timeSpan.ToString(@"hh\:mm\:ss");
                 }

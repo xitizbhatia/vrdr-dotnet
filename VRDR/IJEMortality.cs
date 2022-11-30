@@ -386,72 +386,70 @@ namespace VRDR
             }
         }
 
-        /// <summary>Get a value on the DeathRecord that is a numeric string with the option of being set to all 9s on the IJE side and null on the FHIR side to represent null</summary>
-        private string NumericAllowingUnknown_Get(string ijeFieldName, string fhirFieldName, bool fieldExists = true)
+        /// <summary>Get a value on the DeathRecord that is a numeric string with the option of being set to all 9s on the IJE side and -1 on the
+        /// FHIR side to represent'unknown' and blank on the IJE side and null on the FHIR side to represent unspecified</summary>
+        private string NumericAllowingUnknown_Get(string ijeFieldName, string fhirFieldName)
         {
             IJEField info = FieldInfo(ijeFieldName);
-            if (!fieldExists)
+            int? value = (int?)typeof(DeathRecord).GetProperty(fhirFieldName).GetValue(this.record);
+            if (value == null) return new String(' ', info.Length); // No value specified
+            if (value == -1) return new String('9', info.Length); // Explicitly set to unknown
+            string valueString = Convert.ToString(value);
+            if (valueString.Length > info.Length)
             {
-                return new String(' ', info.Length);
+                validationErrors.Add($"Error: FHIR field {fhirFieldName} contains string '{valueString}' that's not the expected length for IJE field {ijeFieldName} of length {info.Length}");
             }
-            uint? value = (uint?)typeof(DeathRecord).GetProperty(fhirFieldName).GetValue(this.record);
-            if (value != null)
-            {
-                string valueString = Convert.ToString(value);
-                if (valueString.Length > info.Length)
-                {
-                    validationErrors.Add($"Error: FHIR field {fhirFieldName} contains string '{valueString}' that's not the expected length for IJE field {ijeFieldName} of length {info.Length}");
-                }
-                return Truncate(valueString, info.Length).PadLeft(info.Length, '0');
-            }
-            else
-            {
-                return new String('9', info.Length);
-            }
+            return Truncate(valueString, info.Length).PadLeft(info.Length, '0');
         }
 
-        /// <summary>Set a value on the DeathRecord that is a numeric string with the option of being set to all 9s on the IJE side and null on the FHIR side to represent null</summary>
+        /// <summary>Set a value on the DeathRecord that is a numeric string with the option of being set to all 9s on the IJE side and -1 on the
+        /// FHIR side to represent'unknown' and blank on the IJE side and null on the FHIR side to represent unspecified</summary>
         private void NumericAllowingUnknown_Set(string ijeFieldName, string fhirFieldName, string value)
         {
             IJEField info = FieldInfo(ijeFieldName);
-            if (value == new string('9', info.Length) || value == new string(' ', info.Length))
+            if (value == new string(' ', info.Length))
             {
                 typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, null);
             }
+            else if (value == new string('9', info.Length))
+            {
+                typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, -1);
+            }
             else
             {
-                typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, Convert.ToUInt32(value));
+                typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, Convert.ToInt32(value));
             }
         }
 
         /// <summary>Get a value on the DeathRecord that is a time with the option of being set to all 9s on the IJE side and null on the FHIR side to represent null</summary>
-        private string TimeAllowingUnknown_Get(string ijeFieldName, string fhirFieldName, bool fieldExists = true)
+        private string TimeAllowingUnknown_Get(string ijeFieldName, string fhirFieldName)
         {
             IJEField info = FieldInfo(ijeFieldName);
-            if (!fieldExists)
-            {
-                return new String(' ', info.Length);
-            }
             string timeString = (string)typeof(DeathRecord).GetProperty(fhirFieldName).GetValue(this.record);
-            if (timeString != null)
+            if (timeString == null) return new String(' ', info.Length); // No value specified
+            if (timeString == "-1") return new String('9', info.Length); // Explicitly set to unknown
+            DateTimeOffset parsedTime;
+            if (DateTimeOffset.TryParse(timeString, out parsedTime))
             {
-                DateTimeOffset parsedTime;
-                if (DateTimeOffset.TryParse(timeString, out parsedTime))
-                {
-                    TimeSpan timeSpan = new TimeSpan(0, parsedTime.Hour, parsedTime.Minute, parsedTime.Second);
-                    return timeSpan.ToString(@"hhmm");
-                }
+                TimeSpan timeSpan = new TimeSpan(0, parsedTime.Hour, parsedTime.Minute, parsedTime.Second);
+                return timeSpan.ToString(@"hhmm");
             }
-            return new String('9', info.Length);
+            // No valid date found
+            validationErrors.Add($"Error: FHIR field {fhirFieldName} contains value '{timeString}' that cannot be parsed into a time for IJE field {ijeFieldName}");
+            return new String(' ', info.Length);
         }
 
         /// <summary>Set a value on the DeathRecord that is a time with the option of being set to all 9s on the IJE side and null on the FHIR side to represent null</summary>
         private void TimeAllowingUnknown_Set(string ijeFieldName, string fhirFieldName, string value)
         {
             IJEField info = FieldInfo(ijeFieldName);
-            if (value == new string('9', info.Length) || value == new string(' ', info.Length))
+            if (value == new string(' ', info.Length))
             {
                 typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, null);
+            }
+            else if (value == new string('9', info.Length))
+            {
+                typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, "-1");
             }
             else
             {
@@ -946,9 +944,9 @@ namespace VRDR
                 string[] names = record.GivenNames;
                 if (names.Length > 0)
                 {
-                    return names[0];
+                    return Truncate(names[0], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
@@ -968,20 +966,21 @@ namespace VRDR
                 string[] names = record.GivenNames;
                 if (names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 1).PadRight(1, ' ');
                 }
-                return "";
+                return " ";
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(GNAME)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (String.IsNullOrWhiteSpace(DMIDDLE))
                     {
                         if (record.GivenNames != null)
                         {
                             List<string> names = record.GivenNames.ToList();
-                            names.Add(value.Trim());
+                            if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                             record.GivenNames = names.ToArray();
                         }
                     }
@@ -2827,7 +2826,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("DOI_MO", "InjuryMonth", record.InjuryIncidentTimeSet());
+                return NumericAllowingUnknown_Get("DOI_MO", "InjuryMonth");
             }
             set
             {
@@ -2841,7 +2840,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("DOI_DY", "InjuryDay", record.InjuryIncidentTimeSet());
+                return NumericAllowingUnknown_Get("DOI_DY", "InjuryDay");
             }
             set
             {
@@ -2855,7 +2854,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("DOI_YR", "InjuryYear", record.InjuryIncidentTimeSet());
+                return NumericAllowingUnknown_Get("DOI_YR", "InjuryYear");
             }
             set
             {
@@ -2869,7 +2868,7 @@ namespace VRDR
         {
             get
             {
-                return TimeAllowingUnknown_Get("TOI_HR", "InjuryTime", record.InjuryIncidentTimeSet());
+                return TimeAllowingUnknown_Get("TOI_HR", "InjuryTime");
             }
             set
             {
@@ -2979,7 +2978,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("SUR_MO", "SurgeryMonth", record.SurgeryDateSet());
+                return NumericAllowingUnknown_Get("SUR_MO", "SurgeryMonth");
             }
             set
             {
@@ -2996,7 +2995,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("SUR_DY", "SurgeryDay", record.SurgeryDateSet());
+                return NumericAllowingUnknown_Get("SUR_DY", "SurgeryDay");
             }
             set
             {
@@ -3013,7 +3012,7 @@ namespace VRDR
         {
             get
             {
-                return NumericAllowingUnknown_Get("SUR_YR", "SurgeryYear", record.SurgeryDateSet());
+                return NumericAllowingUnknown_Get("SUR_YR", "SurgeryYear");
             }
             set
             {
@@ -3030,7 +3029,7 @@ namespace VRDR
         {
             get
             {
-                if (record.InjuryIncidentTimeSet())
+                if (DOI_YR != "9999" && DOI_YR != "    ")
                 {
                     if (Int32.Parse(record.InjuryTime.Substring(0, 2)) < 12)
                         return "A";
@@ -3353,9 +3352,9 @@ namespace VRDR
                 string[] names = record.SpouseGivenNames;
                 if (names.Length > 0)
                 {
-                    return names[0];
+                    return Truncate(names[0], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
@@ -3735,18 +3734,19 @@ namespace VRDR
                 string[] names = record.GivenNames;
                 if (names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(GNAME)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (record.GivenNames != null)
                     {
                         List<string> names = record.GivenNames.ToList();
-                        names.Add(value.Trim());
+                        if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                         record.GivenNames = names.ToArray();
                     }
                 }
@@ -3762,9 +3762,9 @@ namespace VRDR
                 string[] names = record.FatherGivenNames;
                 if (names != null && names.Length > 0)
                 {
-                    return names[0];
+                    return Truncate(names[0], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
@@ -3784,18 +3784,19 @@ namespace VRDR
                 string[] names = record.FatherGivenNames;
                 if (names != null && names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(DDADF)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (record.FatherGivenNames != null)
                     {
                         List<string> names = record.FatherGivenNames.ToList();
-                        names.Add(value.Trim());
+                        if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                         record.FatherGivenNames = names.ToArray();
                     }
                 }
@@ -3811,9 +3812,9 @@ namespace VRDR
                 string[] names = record.MotherGivenNames;
                 if (names != null && names.Length > 0)
                 {
-                    return names[0];
+                    return Truncate(names[0], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
@@ -3833,18 +3834,19 @@ namespace VRDR
                 string[] names = record.MotherGivenNames;
                 if (names != null && names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(DMOMF)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (record.MotherGivenNames != null)
                     {
                         List<string> names = record.MotherGivenNames.ToList();
-                        names.Add(value.Trim());
+                        if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                         record.MotherGivenNames = names.ToArray();
                     }
                 }
@@ -4367,18 +4369,19 @@ namespace VRDR
                 string[] names = record.SpouseGivenNames;
                 if (names != null && names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(SPOUSEF)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (record.SpouseGivenNames != null)
                     {
                         List<string> names = record.SpouseGivenNames.ToList();
-                        names.Add(value.Trim());
+                        if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                         record.SpouseGivenNames = names.ToArray();
                     }
                 }
@@ -4754,9 +4757,9 @@ namespace VRDR
                 string[] names = record.CertifierGivenNames;
                 if (names != null && names.Length > 0)
                 {
-                    return names[0];
+                    return Truncate(names[0], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
@@ -4776,18 +4779,19 @@ namespace VRDR
                 string[] names = record.CertifierGivenNames;
                 if (names != null && names.Length > 1)
                 {
-                    return names[1];
+                    return Truncate(names[1], 50).PadRight(50, ' ');
                 }
-                return "";
+                return new string(' ', 50);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
+                    if (String.IsNullOrWhiteSpace(CERTFIRST)) throw new ArgumentException("Middle name cannot be set before first name");
                     if (record.GivenNames != null)
                     {
                         List<string> names = record.CertifierGivenNames.ToList();
-                        names.Add(value.Trim());
+                        if (names.Count() > 1) names[1] = value.Trim(); else names.Add(value.Trim());
                         record.CertifierGivenNames = names.ToArray();
                     }
                 }

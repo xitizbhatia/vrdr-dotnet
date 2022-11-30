@@ -47,9 +47,9 @@ This repository includes .NET (C#) code for
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/HL7/vrdr/">STU2 v1.3</a></td>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9</a></td>
 <td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview13</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview13">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview13"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview13">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview13"> github</a></td>
+<td style="text-align: center;">V4.0.0-preview14</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview14">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview14"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview14">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview14"> github</a></td>
 </tr>
 </tbody>
 </table>
@@ -78,7 +78,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR" Version="4.0.0-preview13" />
+  <PackageReference Include="VRDR" Version="4.0.0-preview14" />
   ...
 </ItemGroup>
 ```
@@ -153,6 +153,37 @@ Console.WriteLine($"Date/Time of Death: {deathRecord.DateOfDeath}");
 Console.WriteLine($"Cause of Death Part I, Line a: {deathRecord.COD1A}");
 Console.WriteLine($"Cause of Death Part I Interval, Line a: {deathRecord.INTERVAL1A}");
 ```
+#### Specifying that a date or time is explicitly unknown
+
+When specifying a date or time it is important to be able to differentiate between "we explicitly
+don't know the date, and we're telling you that we don't know it" and just not setting a date
+property at all. For this reason the date and time properties on the DeathRecord class support the
+special value of -1 (for properties that expect an integer) or "-1" (for properties that expect a
+string) in order to specify that the data is explicitly unknown. This is equivalent to using a value
+of "9999" in IJE.
+
+Example:
+
+```
+DeathRecord deathRecord = new DeathRecord();
+deathRecord.DeathYear = 2022;
+deathRecord.DeathMonth = 2;
+deathRecord.DeathDay = -1;
+deathRecord.DeathTime = "-1";
+```
+
+#### Names in FHIR
+
+FHIR manages names in a way that there is a fundamental incompatibility with IJE: in FHIR the
+"middle name" is stored as the second element in an array of given names. That means that it's not
+possible to set a middle name without first setting a first name. The library handles this by
+
+1. Requiring the entire given name (first name and any middle names) to be set all at once when
+using the DeathRecord class
+2. Raising an exception if a middle name is set before a first name when using the IJEMortality
+class
+3. Resetting the middle name if the first name is set again when using the IJEMortality class;
+setting the first name and then the middle name ensures no issues will occur.
 
 #### Helper Methods for Value Sets
 
@@ -275,7 +306,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR.Messaging" Version="4.0.0-preview13" />
+  <PackageReference Include="VRDR.Messaging" Version="4.0.0-preview14" />
   ...
 </ItemGroup>
 ```

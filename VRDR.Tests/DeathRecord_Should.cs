@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Reflection;
 using System.IO;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -101,7 +101,7 @@ namespace VRDR.Tests
             DeathRecord first = DeathRecord2_JSON;
             IJEMortality firstije = new IJEMortality(first);
             Assert.Null(first.DateOfDeath);   // Record has an unknown death day, the DeathDate should be null
-            Assert.Null(first.DeathDay);
+            Assert.Equal(-1, first.DeathDay); // Since it's explicitly unknown the DeathDay should be -1
             Assert.Equal("French", firstije.RACE22);
         }
         [Fact]
@@ -1238,14 +1238,19 @@ namespace VRDR.Tests
             Assert.Equal(1950, (int)SetterDeathRecord.BirthYear);
             Assert.Null(SetterDeathRecord.BirthMonth);
             Assert.Null(SetterDeathRecord.BirthDay);
+            SetterDeathRecord.BirthMonth = -1;
+            SetterDeathRecord.BirthDay = -1;
+            Assert.Equal(1950, (int)SetterDeathRecord.BirthYear);
+            Assert.Equal(-1, SetterDeathRecord.BirthMonth);
+            Assert.Equal(-1, SetterDeathRecord.BirthDay);
         }
 
         [Fact]
         public void Get_BirthDate_Partial_Date()
         {
             DeathRecord dr = new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/BirthAndDeathDateDataAbsent.json")));
-            Assert.Null(dr.BirthYear);
-            Assert.Null(dr.BirthMonth);
+            Assert.Equal(-1, dr.BirthYear);
+            Assert.Equal(-1, dr.BirthMonth);
             Assert.Equal(24, (int)dr.BirthDay);
         }
 
@@ -1259,8 +1264,8 @@ namespace VRDR.Tests
             Assert.Equal("99", ije1.DOB_MO);
             Assert.Equal("24", ije1.DOB_DY);
             DeathRecord dr1 = ije1.ToDeathRecord();
-            Assert.Null(dr1.BirthYear);
-            Assert.Null(dr1.BirthMonth);
+            Assert.Equal(-1, dr1.BirthYear);
+            Assert.Equal(-1, dr1.BirthMonth);
             Assert.Equal(24, (int)dr1.BirthDay);
             Assert.Null(dr1.DateOfBirth);
         }
@@ -2367,7 +2372,7 @@ namespace VRDR.Tests
             Assert.Equal("1", DeathRecord1_JSON.PregnancyStatus["code"]);
             Assert.Equal(VRDR.CodeSystems.PregnancyStatus, DeathRecord1_JSON.PregnancyStatus["system"]);
             Assert.Equal("Not pregnant within past year", DeathRecord1_JSON.PregnancyStatus["display"]);
-            Assert.Equal(ValueSets.PregnancyStatus.Pregnant_At_Time_Of_Death,DeathCertificateDocument2_JSON.PregnancyStatusHelper );
+            Assert.Equal(ValueSets.PregnancyStatus.Pregnant_At_Time_Of_Death, DeathCertificateDocument2_JSON.PregnancyStatusHelper);
             Assert.Equal("1", DeathRecord1_XML.PregnancyStatus["code"]);
             Assert.Equal(VRDR.CodeSystems.PregnancyStatus, DeathRecord1_XML.PregnancyStatus["system"]);
             Assert.Equal("Not pregnant within past year", DeathRecord1_XML.PregnancyStatus["display"]);
@@ -2868,12 +2873,12 @@ namespace VRDR.Tests
         {
             Assert.Null(DeathCertificateDocument2_JSON.DateOfDeath);
             Assert.Null(DeathCertificateDocument2_JSON.DeathDay);
-            Assert.Equal((uint)2020, (DeathCertificateDocument2_JSON.DeathYear));
+            Assert.Equal(2020, (DeathCertificateDocument2_JSON.DeathYear));
             Assert.Equal("2020-11-12T00:00:00", DeathCertificateDocument1_JSON.DateOfDeath);
-            Assert.Equal((uint)2020, (DeathCertificateDocument1_JSON.DeathYear));
+            Assert.Equal(2020, (DeathCertificateDocument1_JSON.DeathYear));
             Assert.Null(DeathCertificateDocument1_JSON.DeathTime);
             Assert.Equal("2019-02-19T16:48:06", DeathRecord1_XML.DateOfDeath);
-            Assert.Equal((uint)2019, (DeathRecord1_JSON.DeathYear));
+            Assert.Equal(2019, (DeathRecord1_JSON.DeathYear));
         }
 
         [Fact]
@@ -2896,15 +2901,45 @@ namespace VRDR.Tests
             //Tuple<string, string>[] datePart = { Tuple.Create("date-year", "2021"), Tuple.Create("date-month", "5"), Tuple.Create("day-absent-reason", "asked-unknown")};
             SetterDeathRecord.DeathYear = 2021;
             SetterDeathRecord.DeathMonth = 5;
-            SetterDeathRecord.DeathDay = null;
+            SetterDeathRecord.DeathDay = -1;
             SetterDeathRecord.DeathTime = "10:00:00";
             IJEMortality ije1 = new IJEMortality(SetterDeathRecord, false);
+            Assert.Equal("2021", ije1.DOD_YR);
+            Assert.Equal("05", ije1.DOD_MO);
+            Assert.Equal("99", ije1.DOD_DY);
             Assert.Equal("1000", ije1.TOD);
             DeathRecord dr2 = ije1.ToDeathRecord();
-            Assert.Equal(2021, (int)dr2.DeathYear);
-            Assert.Equal(5, (int)dr2.DeathMonth);
-            Assert.Null(dr2.DeathDay);
+            Assert.Equal(2021, dr2.DeathYear);
+            Assert.Equal(5, dr2.DeathMonth);
+            Assert.Equal(-1, dr2.DeathDay);
             Assert.Equal("10:00:00", dr2.DeathTime);
+        }
+
+        [Fact]
+        public void Set_DateOfDeath_Unknown_Partial_Date()
+        {
+            // Test ability to set dates and times diferentiating between explicitly unknown and unspecified
+            DeathRecord d = new DeathRecord();
+            Assert.Null(d.DeathYear);
+            Assert.Null(d.DeathMonth);
+            Assert.Null(d.DeathDay);
+            Assert.Null(d.DeathTime);
+            d.DeathYear = 2022;
+            Assert.Equal(2022, d.DeathYear);
+            Assert.Null(d.DeathMonth);
+            Assert.Null(d.DeathDay);
+            Assert.Null(d.DeathTime);
+            d.DeathMonth = -1;
+            d.DeathTime = "-1";
+            Assert.Equal(2022, d.DeathYear);
+            Assert.Equal(-1, d.DeathMonth);
+            Assert.Null(d.DeathDay);
+            Assert.Equal("-1", d.DeathTime);
+            IJEMortality ije = new IJEMortality(d, false);
+            Assert.Equal("2022", ije.DOD_YR);
+            Assert.Equal("99", ije.DOD_MO);
+            Assert.Equal("  ", ije.DOD_DY);
+            Assert.Equal("9999", ije.TOD);
         }
 
         [Fact]
@@ -2913,7 +2948,7 @@ namespace VRDR.Tests
             DeathRecord dr = new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/BirthAndDeathDateDataAbsent.json")));
             Assert.Equal(2021, (int)dr.DeathYear);
             Assert.Equal(2, (int)dr.DeathMonth);
-            Assert.Null(dr.DeathDay);
+            Assert.Equal(-1, dr.DeathDay);
         }
 
         [Fact]
@@ -3147,7 +3182,7 @@ namespace VRDR.Tests
             SetterDeathRecord.EntityAxisCauseOfDeath = new[] { (LineNumber: 2, Position: 1, Code: "T27.3", ECode: true),
                                                                (LineNumber: 2, Position: 3, Code: "K27.10", ECode: false) };
             var eacGet = SetterDeathRecord.EntityAxisCauseOfDeath;
-            Assert.Equal(2,eacGet.Count());
+            Assert.Equal(2, eacGet.Count());
             Assert.Equal(2, eacGet.ElementAt(0).LineNumber);
             Assert.Equal(1, eacGet.ElementAt(0).Position);
             Assert.Equal("T27.3", eacGet.ElementAt(0).Code);
@@ -3244,7 +3279,7 @@ namespace VRDR.Tests
             Bundle bundle = DeathRecord1_JSON.GetCauseOfDeathCodedContentBundle();
             DeathRecord codedcontentbundle = new DeathRecord(bundle);
             Assert.NotNull(bundle);
-            Assert.Equal("2019YC000182",codedcontentbundle.DeathRecordIdentifier);
+            Assert.Equal("2019YC000182", codedcontentbundle.DeathRecordIdentifier);
             Assert.Equal("000182", codedcontentbundle.Identifier);
             Assert.Equal("000000000042", codedcontentbundle.StateLocalIdentifier1);
             Assert.Equal("100000000001", codedcontentbundle.StateLocalIdentifier2);
@@ -3259,7 +3294,7 @@ namespace VRDR.Tests
             Bundle bundle = DeathRecord1_JSON.GetDemographicCodedContentBundle();
             Assert.NotNull(bundle);
             DeathRecord codedcontentbundle = new DeathRecord(bundle);
-            Assert.Equal("2019YC000182",codedcontentbundle.DeathRecordIdentifier);
+            Assert.Equal("2019YC000182", codedcontentbundle.DeathRecordIdentifier);
             Assert.Equal("000182", codedcontentbundle.Identifier);
             Assert.Equal("000000000042", codedcontentbundle.StateLocalIdentifier1);
             Assert.Equal("100000000001", codedcontentbundle.StateLocalIdentifier2);
@@ -3274,13 +3309,13 @@ namespace VRDR.Tests
             DeathRecord mortalityrosterbundle = new DeathRecord(bundle);
             Assert.NotNull(bundle);
             var numExtensions = bundle.Meta.Extension.Count();
-            Assert.Equal(2,numExtensions); // alias and replace
-            Assert.Equal("2019YC000182",mortalityrosterbundle.DeathRecordIdentifier);
+            Assert.Equal(2, numExtensions); // alias and replace
+            Assert.Equal("2019YC000182", mortalityrosterbundle.DeathRecordIdentifier);
             Assert.Equal("000182", mortalityrosterbundle.Identifier);
             Assert.Equal("000000000042", mortalityrosterbundle.StateLocalIdentifier1);
             Assert.Equal("100000000001", mortalityrosterbundle.StateLocalIdentifier2);
             Assert.Equal("", mortalityrosterbundle.CertificationRole["code"]); // should be empty
-            Assert.Equal("",mortalityrosterbundle.PregnancyStatusHelper); // should be missing
+            Assert.Equal("", mortalityrosterbundle.PregnancyStatusHelper); // should be missing
             // TODO: Fill out tests
         }
         [Fact]
@@ -3347,6 +3382,190 @@ namespace VRDR.Tests
             // A record with an a literal race field (e.g., AmericanIndianOrAlaskanNativeLiteral1) with no content should parse successfully
             DeathRecord dr = new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/EmptyRaceLiteral.json")));
             Assert.DoesNotContain(dr.Race, (t => t.Item1 == "AmericanIndianOrAlaskanNativeLiteral1"));
+        }
+
+        [Fact]
+        public void TestForOverwrites()
+        {
+            // This test makes sure that there are no fields that, when writing them, accidentally change another field;
+            // we test this by going through each field, setting it to a value, and then setting all other fields to a value,
+            // and then checking to make sure the original field still has the same value
+
+            // Make a list of all the fields we'll test and a valid value for each
+            Dictionary<string, string> fields = new Dictionary<string, string>
+            {
+                // This list of fields is fairly comprehensive, though some have been intentionally left out:
+                // STATETEXT_D, STATEBTH, and FUNSTATE (setting these are a no-ops)
+                // MNAME, DMIDDLE, DDADMID, DMOMMID, SPOUSEMIDNAME, CERTMIDDLE (middle names behave oddly due to how FHIR represents names)
+                { "DOD_YR", "2022" },
+                { "DSTATE", "CT" },
+                { "FILENO", "000001" },
+                { "AUXNO", "000000000001" },
+                { "MFILED", "0" },
+                { "GNAME", "Twila" },
+                { "LNAME", "Hilty" },
+                { "SUFF", "Jr." },
+                { "FLNAME", "Brown" },
+                { "SEX", "F" },
+                { "SSN", "531869507" },
+                { "AGETYPE", "1" },
+                { "AGE", "020" },
+                { "AGE_BYPASS", "0" },
+                { "DOB_YR", "2002" },
+                { "DOB_MO", "01" },
+                { "DOB_DY", "01" },
+                { "BPLACE_CNT", "US" },
+                { "BPLACE_ST", "CT" },
+                { "CITYC", "37000" },
+                { "COUNTYC", "003" },
+                { "STATEC", "CT" },
+                { "COUNTRYC", "US" },
+                { "LIMITS", "Y" },
+                { "MARITAL", "S" },
+                { "MARITAL_BYPASS", "0" },
+                { "DPLACE", "1" },
+                { "COD", "001" },
+                { "DISP", "B" },
+                { "DOD_MO", "01" },
+                { "DOD_DY", "10" },
+                { "TOD", "1000" },
+                { "DEDUC", "8" },
+                { "DEDUC_BYPASS", "0" },
+                { "DETHNIC1", "N" },
+                { "DETHNIC2", "N" },
+                { "DETHNIC3", "N" },
+                { "DETHNIC4", "N" },
+                { "RACE1", "Y" },
+                { "RACE2", "N" },
+                { "RACE3", "N" },
+                { "RACE4", "N" },
+                { "RACE5", "N" },
+                { "RACE6", "N" },
+                { "RACE7", "N" },
+                { "RACE8", "N" },
+                { "RACE9", "N" },
+                { "RACE10", "N" },
+                { "RACE11", "N" },
+                { "RACE12", "N" },
+                { "RACE13", "N" },
+                { "RACE14", "N" },
+                { "RACE15", "N" },
+                { "OCCUP", "Teacher" },
+                { "INDUST", "Education" },
+                { "BCNO", "717171" },
+                { "IDOB_YR", "1961" },
+                { "BSTATE", "YC" },
+                { "R_YR", "2021" },
+                { "R_MO", "12" },
+                { "R_DY", "12" },
+                { "DOR_YR", "2020" },
+                { "DOR_MO", "11" },
+                { "DOR_DY", "15" },
+                { "MANNER", "N" },
+                { "INT_REJ", "1" },
+                { "SYS_REJ", "0" },
+                { "INJPL", "0" },
+                { "MAN_UC", "J960" },
+                { "ACME_UC", "J960" },
+                { "EAC", "11J960" },
+                { "TRX_FLG", "3" },
+                { "RAC", "J960" },
+                { "AUTOP", "N" },
+                { "AUTOPF", "X" },
+                { "TOBAC", "U" },
+                { "PREG", "2" },
+                { "PREG_BYPASS", "0" },
+                { "DOI_MO", "11" },
+                { "DOI_DY", "02" },
+                { "DOI_YR", "2019" },
+                { "TOI_HR", "1300" },
+                { "WORKINJ", "N" },
+                { "CERTL", "D" },
+                { "INACT", "1" },
+                { "AUXNO2", "100000000001" },
+                { "STATESP", "20220101" },
+                { "SUR_MO", "01" },
+                { "SUR_DY", "10" },
+                { "SUR_YR", "2022" },
+                { "ARMEDF", "Y" },
+                { "DINSTI", "Pecan Grove Nursing Home" },
+                { "CITYTEXT_D", "Albany" },
+                { "CITYCODE_D", "00000" },
+                { "LONG_D", "-77.050636" },
+                { "LAT_D", "38.889248" },
+                { "SPOUSELV", "1" },
+                { "SPOUSEL", "Gazette" },
+                { "STNUM_R", "1829" },
+                { "PREDIR_R", "North" },
+                { "STNAME_R", "Charles" },
+                { "STDESIG_R", "Avenue" },
+                { "POSTDIR_R", "Southeast" },
+                { "UNITNUM_R", "Apt 2B" },
+                { "CITYTEXT_R", "Hartford" },
+                { "ZIP9_R", "06107" },
+                { "COUNTYTEXT_R", "Hartford" },
+                { "STATETEXT_R", "Connecticut" },
+                { "COUNTRYTEXT_R", "United States" },
+                { "ADDRESS_R", "4437 North Charles Avenue Southeast Apt 2B" },
+                { "DETHNICE", "233" },
+                { "DDADF", "John" },
+                { "DMOMF", "Momfirst" },
+                { "DMOMMDN", "Suzette" },
+                { "REFERRED", "Y" },
+                { "POILITRL", "Home" },
+                { "HOWINJ", "drug toxicity" },
+                { "TRANSPRT", "PE" },
+                { "COUNTYCODE_I", "000" },
+                { "CITYCODE_I", "00000" },
+                { "REPLACE", "0" },
+                { "COD1A", "Cardiopulmonary arrest" },
+                { "INTERVAL1A", "4 Hours" },
+                { "COD1B", "Eclampsia" },
+                { "INTERVAL1B", "3 Months" },
+                { "OTHERCONDITION", "hypertensive heart disease" },
+                { "DBPLACECITY", "Roanoke" },
+                { "SPOUSESUFFIX", "Ss" },
+                { "FATHERSUFFIX", "Sr" },
+                { "MOTHERSSUFFIX", "Ms" },
+                { "INFORMRELATE", "Friend of family" },
+                { "DISPSTATECD", "VA" },
+                { "DISPCITY", "Danville" },
+                { "FUNFACNAME", "Lancaster Funeral Home and Crematory" },
+                { "FUNFACADDRESS", "211 High Street" },
+                { "FUNCITYTEXT", "Lancaster" },
+                { "FUNZIP", "17573" },
+                { "PPDATESIGNED", "11132020" },
+                { "PPTIME", "2139" },
+                { "CERTFIRST", "Jim" },
+                { "CERTLAST", "Black" },
+                { "CERTSUFFIX", "Cr" },
+                { "CERTADDRESS", "44 South Street" },
+                { "CERTCITYTEXT", "Bird in Hand" },
+                { "CERTSTATECD", "PA" },
+                { "CERTSTATE", "Pennsylvania" },
+                { "CERTZIP", "17505" },
+                { "CERTDATE", "11142020" },
+                { "DTHCOUNTRYCD", "US" },
+                { "DTHCOUNTRY", "United States" },
+                { "PLACE1_1", "H" },
+                { "PLACE1_2", "I" },
+                { "PLACE8_1", "Hi 8_1" },
+                { "PLACE20", "Hi 20_1"}
+            };
+            // For each field, create a record, set that field, set all the other fields, and make sure the first field still has the same value
+            foreach(var (field, value) in fields)
+            {
+                IJEMortality ije = new IJEMortality();
+                PropertyInfo property = typeof(IJEMortality).GetProperty(field);
+                property.SetValue(ije, value);
+                foreach(var (overwriteField, overwriteValue) in fields)
+                {
+                    if (overwriteField == field) continue; // Don't rewrite the field we're testing
+                    PropertyInfo overwriteProperty = typeof(IJEMortality).GetProperty(overwriteField);
+                    overwriteProperty.SetValue(ije, overwriteValue);
+                }
+                Assert.Equal(value, ((string)property.GetValue(ije)).Trim());
+            }
         }
 
         private string FixturePath(string filePath)
