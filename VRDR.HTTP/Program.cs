@@ -49,7 +49,8 @@ namespace VRDR.HTTP
         {
             string requestBody = GetBodyContent(request);
             DeathRecord deathRecord = null;
-            Bundle searchSets = null;
+            Bundle bundle = null;
+            
             Console.WriteLine($"Request from: {request.UserHostAddress}, type: {request.ContentType}, url: {request.RawUrl}.");
 
             // Look at content type to determine input format; be permissive in what we accept as format specification
@@ -64,7 +65,7 @@ namespace VRDR.HTTP
                     break;
                 case string fhirResponseBundleOfBundle when new Regex(@"responsebundle").IsMatch(fhirResponseBundleOfBundle): //application/fhir+responsebundle
                     FhirJsonParser parser = new FhirJsonParser();
-                    searchSets = parser.Parse<Bundle>(requestBody);
+                    bundle = parser.Parse<Bundle>(requestBody);
                     break;
                 case string jsonType when new Regex(@"json").IsMatch(jsonType): // application/fhir+json
                 case string xmlType when new Regex(@"xml").IsMatch(xmlType): // application/fhir+xml
@@ -85,9 +86,36 @@ namespace VRDR.HTTP
                     result = deathRecord.ToJSON();
                     break;
                 case string url when new Regex(@"fhir").IsMatch(url): // .fhir //ije to json vrdr message
-                    DeathRecordSubmissionMessage message = new DeathRecordSubmissionMessage(deathRecord);
-                    message.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
-                    result = message.ToJSON(true);
+                    string messageType = request.Headers.GetValues("FHIR-MESSAGE-TYPE").FirstOrDefault();
+                    switch(messageType)
+                    {
+                        case "SUBMISSION":
+                            DeathRecordSubmissionMessage message = new DeathRecordSubmissionMessage(deathRecord);
+                            message.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
+                            result = message.ToJSON(true);
+                            break;
+                        case "UPDATE":
+                            DeathRecordUpdateMessage updatemessage = new DeathRecordUpdateMessage(deathRecord);
+                            updatemessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
+                            result = updatemessage.ToJSON(true);
+                            break;
+                        case "VOID":
+                            DeathRecordVoidMessage voidmessage = new DeathRecordVoidMessage(deathRecord);
+                            voidmessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
+                            result = voidmessage.ToJSON(true);
+                            break;
+                        case "ACKNOWLEDGEMENT":
+                            BaseMessage baseMessage = BaseMessage.Parse(bundle);
+                            AcknowledgementMessage acknowledgementMessage = new AcknowledgementMessage(baseMessage);
+                            acknowledgementMessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
+                            result = acknowledgementMessage.ToJSON(true);
+                            break;
+                        default:
+                            DeathRecordSubmissionMessage messagedefault = new DeathRecordSubmissionMessage(deathRecord);
+                            messagedefault.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
+                            result = messagedefault.ToJSON(true);
+                            break;
+                    }
                     break;
                 case string url when new Regex(@"xml$").IsMatch(url): // .xml
                     result = deathRecord.ToXML();
@@ -96,10 +124,10 @@ namespace VRDR.HTTP
                     result = Nightingale.ToNightingale(deathRecord);
                     break;
                 case string url when new Regex(@"parsebundleofbundles").IsMatch(url): // .parsebundleofbundles
-                    result = parseBundle(searchSets);
+                    result = parseBundle(bundle);
                     break;
                 case string url when new Regex(@"extractmessagefrombundle").IsMatch(url): // .extractmessagefrombundle
-                    result = extractMessageFromBundle(searchSets, request.Headers.GetValues("FHIR-MESSAGE-ID").FirstOrDefault());
+                    result = extractMessageFromBundle(bundle, request.Headers.GetValues("FHIR-MESSAGE-ID").FirstOrDefault());
                     break;
             }
 
