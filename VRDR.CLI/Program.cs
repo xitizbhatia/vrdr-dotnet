@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1100,6 +1100,11 @@ namespace VRDR.CLI
                 string payload = Client.CreateBulkUploadPayload(messages, url, true);
                 Console.WriteLine(payload);
                 return 0;
+			} //(Add BundleOfBunde response parsing and extraction of message from BundleOfBundle Response to HTTP service and parsing of BundleOfBundle response to CLI)
+            else if (args[0] == "parse")
+            {
+                string searchsets = File.ReadAllText(args[1]);
+                parseBundle(searchsets);
             }
             else
             {
@@ -1259,6 +1264,63 @@ namespace VRDR.CLI
             }
             Console.WriteLine($"Differences detected: {differences}");
             return differences;
+        }
+
+        private static void parseBundle(String bundleOfBundles)
+        {
+            FhirJsonParser parser = new FhirJsonParser();
+            Bundle bundle = parser.Parse<Bundle>(bundleOfBundles);
+
+            foreach (var entry in bundle.Entry)
+            {
+                try
+                {
+                    BaseMessage msg = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                    switch (msg.MessageType)
+                    {
+                        case "http://nchs.cdc.gov/vrdr_acknowledgement":
+                            AcknowledgementMessage message = BaseMessage.Parse<AcknowledgementMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received ack message: {message.MessageId} for {message.AckedMessageId} and certNo: {message.CertNo}");
+                            //ProcessAckMessage(message);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_causeofdeath_coding":
+                            CauseOfDeathCodingMessage codCodeMsg = BaseMessage.Parse<CauseOfDeathCodingMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received coding message: {codCodeMsg.MessageId} for {codCodeMsg.CodedMessageId}");
+                            //ProcessResponseMessage(codCodeMsg);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_demographics_coding":
+                            DemographicsCodingMessage demCodeMsg = BaseMessage.Parse<DemographicsCodingMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received demographics coding message: {demCodeMsg.MessageId} for {demCodeMsg.CodedMessageId}");
+                            //ProcessResponseMessage(demCodeMsg);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_causeofdeath_coding_update":
+                            CauseOfDeathCodingUpdateMessage codUpdateMsg = BaseMessage.Parse<CauseOfDeathCodingUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received coding update message: {codUpdateMsg.MessageId} for {codUpdateMsg.CodedMessageId}");
+                            //ProcessResponseMessage(codUpdateMsg);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_demographics_coding_update":
+                            DemographicsCodingUpdateMessage demUpdateMsg = BaseMessage.Parse<DemographicsCodingUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received demographics coding update message: {demUpdateMsg.MessageId} for {demUpdateMsg.CodedMessageId}");
+                            //ProcessResponseMessage(demUpdateMsg);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_extraction_error":
+                            ExtractionErrorMessage errMsg = BaseMessage.Parse<ExtractionErrorMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            Console.WriteLine($"*** Received extraction error: {errMsg.MessageId}  for {errMsg.FailedMessageId}");
+                            //ProcessResponseMessage(errMsg);
+                            break;
+                        default:
+                            Console.WriteLine($"*** Unknown message type");
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"*** Error parsing message: {e}");
+                    // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
+                    // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
+                    //TBD
+                }
+            }
         }
     }
 }

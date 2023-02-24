@@ -3051,8 +3051,10 @@ namespace VRDR
             {
                 if (DOI_YR != "9999" && DOI_YR != "    ")
                 {
-                    // Military time since that's the form the datetime object VRDR stores the time of injury as.
-                    return "M";
+                    if (Int32.Parse(record.InjuryTime.Substring(0, 2)) < 12)
+                        return "A";
+                    else
+                        return "M"; // Military time
                 }
                 else
                 {
@@ -3063,7 +3065,7 @@ namespace VRDR
             }
             set
             { // The TOI is persisted as a datetime, so the A/P/M is meaningless.   This set is a NOOP, but generate a diagnostic for A and P
-                if (value != "M" && value != " ")
+                if (value != "M" && value != "A" && value != "P" && value != "U" && value != " ")
                 {
                     validationErrors.Add($"Error: IJE field TOI_UNIT contains string '{value}' but can only be set to M or blank");
                 }
