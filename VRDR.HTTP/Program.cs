@@ -212,6 +212,22 @@ namespace VRDR.HTTP
                             bundleResponse.messages.Add(response);
                             //ProcessResponseMessage(errMsg);
                             break;
+                        case "http://nchs.cdc.gov/vrdr_status":
+                            StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            //Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status}");
+                            if (String.Equals("noCodingNeeded_Duplicate", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_NO_CODING_NEEDED_DUPLICATE", reference = statusMsg.StatusedMessageId };
+                            } else if (String.Equals("manualCauseOfDeathCoding", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL", reference = statusMsg.StatusedMessageId };
+                            } if (String.Equals("manualCodingCanceled_Update", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL_CANCELLED_UPDATE", reference = statusMsg.StatusedMessageId };
+                            } else {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_LOOKUP_IN_JSON", reference = statusMsg.StatusedMessageId };
+                            }
+                            
+                            bundleResponse.messages.Add(response);
+                            //ProcessResponseMessage(statusMsg);
+                            break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
                             break;
@@ -276,6 +292,12 @@ namespace VRDR.HTTP
                             //Console.WriteLine($"*** Checking extraction error: {errMsg.MessageId}  for {errMsg.FailedMessageId}");
                             if (errMsg.MessageId.Equals(messageId))
                                 extractedMessageJSON = errMsg.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_status":
+                            StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            //Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status}");
+                            if (statusMsg.MessageId.Equals(messageId))
+                                extractedMessageJSON = statusMsg.ToJSON();
                             break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
