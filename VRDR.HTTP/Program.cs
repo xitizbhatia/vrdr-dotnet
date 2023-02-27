@@ -88,7 +88,12 @@ namespace VRDR.HTTP
                 case string url when new Regex(@"fhir").IsMatch(url): // .fhir //ije to json vrdr message or create acknowledgement from existing json
                     string messageType = request.Headers.GetValues("FHIR-MESSAGE-TYPE").FirstOrDefault();
                     string auxiliaryId = request.Headers.GetValues("STATE-AUXILIARY-ID").FirstOrDefault();
-                    deathRecord.StateLocalIdentifier1 = auxiliaryId;
+
+                    if (deathRecord != null)
+                    {
+                        deathRecord.StateLocalIdentifier1 = auxiliaryId;
+                    }
+
                     switch (messageType)
                     {
                         case "SUBMISSION":
@@ -214,7 +219,7 @@ namespace VRDR.HTTP
                             break;
                         case "http://nchs.cdc.gov/vrdr_status":
                             StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
-                            //Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status}");
+                            Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status} .");
                             if (String.Equals("noCodingNeeded_Duplicate", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_NO_CODING_NEEDED_DUPLICATE", reference = statusMsg.StatusedMessageId };
                             } else if (String.Equals("manualCauseOfDeathCoding", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
