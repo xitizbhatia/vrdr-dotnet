@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VRDR.Messaging\VRDRMessaging.csproj"/>
+    <ProjectReference Include="..\VRDR.Messaging\VRDRMessaging.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5258,7 +5258,7 @@ namespace VRDR
                 Set_MappingIJEToFHIR(Mappings.HispanicOrigin.IJEToFHIR, "DETHNIC5C", "HispanicCodeForLiteral", value);
             }
         }
-
+        /*
         /// <summary>Blank for One-Byte Field 1</summary>
         [IJEField(248, 4430, 1, "Blank for One-Byte Field 1", "PLACE1_1", 1)]
         public string PLACE1_1
@@ -5429,6 +5429,7 @@ namespace VRDR
             }
         }
         // NOTE: This is a placeholder, the IJE field BLANK3 is not currently implemented in FHIR
+        */
         /// <summary>Marital Descriptor</summary>
         [IJEField(246, 4377, 50, "Martial Descriptor", "MARITAL_DESCRIP", 1)]
         public string MARITAL_DESCRIP
