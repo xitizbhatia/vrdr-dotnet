@@ -3225,6 +3225,55 @@
             <para>Console.WriteLine($"Tobacco Use: {ExampleDeathRecord.TobaccoUseHelper}");</para>
             </example>
         </member>
+        <member name="P:VRDR.DeathRecord.InformantGivenName">
+            <summary>Informant's Given Name.</summary>
+            <value>the informant's given name</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantGivenName = "Joe";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantGivenName}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantFamilyName">
+            <summary>Informant's Family Name.</summary>
+            <value>the informant's family name</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantFamilyName = "Smith";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantFamilyName}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddress">
+            <summary>Informant Address.</summary>
+            <value>Informant Address. A Dictionary representing an address, containing the following key/value pairs:
+            <para>"addressLine1" - address, line one</para>
+            <para>"addressLine2" - address, line two</para>
+            <para>"addressCity" - address, city</para>
+            <para>"addressCounty" - address, county</para>
+            <para>"addressState" - address, state</para>
+            <para>"addressZip" - address, zip</para>
+            <para>"addressCountry" - address, country</para>
+            </value>
+            <example>
+            <para>// Setter:</para>
+            <para>Dictionary&lt;string, string&gt; address = new Dictionary&lt;string, string&gt;();</para>
+            <para>address.Add("addressLine1", "123456 Test Street");</para>
+            <para>address.Add("addressLine2", "Unit 3");</para>
+            <para>address.Add("addressCity", "Boston");</para>
+            <para>address.Add("addressCounty", "Suffolk");</para>
+            <para>address.Add("addressState", "MA");</para>
+            <para>address.Add("addressZip", "12345");</para>
+            <para>address.Add("addressCountry", "US");</para>
+            <para>DeathRecord.InformantAddress = address;</para>
+            <para>// Getter:</para>
+            <para>foreach(var pair in DeathRecord.InformantAddress)</para>
+            <para>{</para>
+            <para>  Console.WriteLine($"\Informant Address key: {pair.Key}: value: {pair.Value}");</para>
+            <para>};</para>
+            </example>
+        </member>
         <member name="M:VRDR.DeathRecord.GetPartialDate(Hl7.Fhir.Model.Extension,System.String)">
             <summary>Getter helper for anything that uses PartialDateTime, allowing a particular date field (year, month, or day) to be read
             from the extension. Returns either a numeric date part, or -1 meaning explicitly unknown, or null meaning not specified.</summary>
@@ -4362,44 +4411,32 @@
         <member name="P:VRDR.IJEMortality.DETHNIC5C">
             <summary>Hispanic Code for Literal</summary>
         </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_1">
-            <summary>Blank for One-Byte Field 1</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_2">
-            <summary>Blank for One-Byte Field 2</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_3">
-            <summary>Blank for One-Byte Field 3</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_4">
-            <summary>Blank for One-Byte Field 4</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_5">
-            <summary>Blank for One-Byte Field 5</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE1_6">
-            <summary>Blank for One-Byte Field 6</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE8_1">
-            <summary>Blank for Eight-Byte Field 1</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE8_2">
-            <summary>Blank for Eight-Byte Field 2</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE8_3">
-            <summary>Blank for Eight-Byte Field 3</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.PLACE20">
-            <summary>Blank for Twenty-Byte Field</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.BLANK2">
-            <summary>Blank for future expansion</summary>
-        </member>
-        <member name="P:VRDR.IJEMortality.BLANK3">
-            <summary>Blank for Jurisdictional Use Only</summary>
-        </member>
         <member name="P:VRDR.IJEMortality.MARITAL_DESCRIP">
             <summary>Marital Descriptor</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INJRY_ADDR1">
+            <summary>Injury Address Line 1</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INJRY_ZIP9">
+            <summary>Injury Zipcode</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_GIVEN_NME">
+            <summary>Informant Given Name</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_LST_NME">
+            <summary>Informant Family Name</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_ADDR1">
+            <summary>Informant Address Line 1</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_CITY">
+            <summary>Informant City</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_STATE">
+            <summary>Informant State</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_ZIP">
+            <summary>Informant Zip</summary>
         </member>
         <member name="T:VRDR.Mappings">
             <summary>Mappings between IJE and FHIR value sets</summary>

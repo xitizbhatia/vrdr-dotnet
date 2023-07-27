@@ -2847,9 +2847,17 @@ namespace VRDR
             }
             set
             {
-                Patient.ContactComponent component = new Patient.ContactComponent();
+                Patient.ContactComponent component = null;
+                if (Decedent != null && Decedent.Contact == null)
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                
+                component = Decedent.Contact.FirstOrDefault();
                 component.Relationship.Add(DictToCodeableConcept(value));
-                Decedent.Contact.Add(component);
+                
+                
             }
         }
 
@@ -7026,6 +7034,189 @@ namespace VRDR
                 {
                     SetCodeValue("TobaccoUse", value, VRDR.ValueSets.ContributoryTobaccoUse.Codes);
                 }
+            }
+        }
+
+
+        /// <summary>Informant's Given Name.</summary>
+        /// <value>the informant's given name</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantGivenName = "Joe";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantGivenName}");</para>
+        /// </example>
+        [Property("Informant Given Name", Property.Types.String, "Decedent Demographics", "Informant's Given Name.", true, IGURL.Decedent, true, 5)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantGivenName
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Name != null && contact.Name.Given != null && contact.Name.Given.Count() > 0)
+                    {
+                        return contact.Name.Given.ElementAt(0);
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && Decedent.Contact == null)
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                component = Decedent.Contact.FirstOrDefault();
+                HumanName name = component.Name;
+                if (name != null && !String.IsNullOrEmpty(value) && name.Use == HumanName.NameUse.Official)
+                {
+                    name.Given =  new string[] { value };
+                }
+                else if (!String.IsNullOrEmpty(value))
+                {
+                    name = new HumanName();
+                    name.Use = HumanName.NameUse.Official;
+                    name.Given = new string[] { value };
+                    component.Name = name;
+                }
+
+            }
+        }
+
+
+        /// <summary>Informant's Family Name.</summary>
+        /// <value>the informant's family name</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantFamilyName = "Smith";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantFamilyName}");</para>
+        /// </example>
+        [Property("Informant Family Name", Property.Types.String, "Decedent Demographics", "Informant's Family Name.", true, IGURL.Decedent, true, 5)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantFamilyName
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Name != null && contact.Name.Family != null)
+                    {
+                        return contact.Name.Family;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && Decedent.Contact == null)
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                component = Decedent.Contact.FirstOrDefault();
+                HumanName name = component.Name;
+                if (name != null && !String.IsNullOrEmpty(value) && name.Use == HumanName.NameUse.Official)
+                {
+                    name.Family = value;
+                }
+                else if (!String.IsNullOrEmpty(value))
+                {
+                    name = new HumanName();
+                    name.Use = HumanName.NameUse.Official;
+                    name.Family = value;
+                    component.Name = name;
+                }
+
+            }
+        }
+
+
+        /// <summary>Informant Address.</summary>
+        /// <value>Informant Address. A Dictionary representing an address, containing the following key/value pairs:
+        /// <para>"addressLine1" - address, line one</para>
+        /// <para>"addressLine2" - address, line two</para>
+        /// <para>"addressCity" - address, city</para>
+        /// <para>"addressCounty" - address, county</para>
+        /// <para>"addressState" - address, state</para>
+        /// <para>"addressZip" - address, zip</para>
+        /// <para>"addressCountry" - address, country</para>
+        /// </value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>Dictionary&lt;string, string&gt; address = new Dictionary&lt;string, string&gt;();</para>
+        /// <para>address.Add("addressLine1", "123456 Test Street");</para>
+        /// <para>address.Add("addressLine2", "Unit 3");</para>
+        /// <para>address.Add("addressCity", "Boston");</para>
+        /// <para>address.Add("addressCounty", "Suffolk");</para>
+        /// <para>address.Add("addressState", "MA");</para>
+        /// <para>address.Add("addressZip", "12345");</para>
+        /// <para>address.Add("addressCountry", "US");</para>
+        /// <para>DeathRecord.InformantAddress = address;</para>
+        /// <para>// Getter:</para>
+        /// <para>foreach(var pair in DeathRecord.InformantAddress)</para>
+        /// <para>{</para>
+        /// <para>  Console.WriteLine($"\Informant Address key: {pair.Key}: value: {pair.Value}");</para>
+        /// <para>};</para>
+        /// </example>
+        [Property("Informant Address", Property.Types.Dictionary, "Decedent Demographics", "Informant Address.", true, IGURL.Decedent, true, 24)]
+        [PropertyParam("addressLine1", "address, line one")]
+        [PropertyParam("addressLine2", "address, line two")]
+        [PropertyParam("addressCity", "address, city")]
+        [PropertyParam("addressCityC", "address, city code")]
+        [PropertyParam("addressCounty", "address, county")]
+        [PropertyParam("addressCountyC", "address, county code")]
+        [PropertyParam("addressState", "address, state")]
+        [PropertyParam("addressZip", "address, zip")]
+        [PropertyParam("addressCountry", "address, country")]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public Dictionary<string, string> InformantAddress
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null)
+                    {
+                        return AddressToDict(contact.Address);
+                    }
+                }
+                return EmptyAddrDict();
+            }
+            set
+            {
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && Decedent.Contact == null)
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                component = Decedent.Contact.FirstOrDefault();
+                component.Address = DictToAddress(value);
             }
         }
 

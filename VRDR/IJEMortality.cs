@@ -151,9 +151,9 @@ namespace VRDR
             {
                 throw new ArgumentException("IJE string cannot be null.");
             }
-            if (ije.Length < 5000)
+            if (ije.Length < 5614)
             {
-                ije = ije.PadRight(5000, ' ');
+                ije = ije.PadRight(5614, ' ');
             }
             // Loop over every property (these are the fields); Order by priority
             List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Priority).ToList();
@@ -185,7 +185,7 @@ namespace VRDR
         public override string ToString()
         {
             // Start with empty IJE Mortality record
-            StringBuilder ije = new StringBuilder(new String(' ', 5000), 5000);
+            StringBuilder ije = new StringBuilder(new String(' ', 5614), 5614);
 
             // Loop over every property (these are the fields)
             foreach (PropertyInfo property in typeof(IJEMortality).GetProperties())
@@ -5443,5 +5443,138 @@ namespace VRDR
                 LeftJustified_Set("MARITAL_DESCRIP", "MaritalStatusLiteral", value);
             }
         }
+
+        /// <summary>Injury Address Line 1</summary>
+        [IJEField(248, 4430, 128, "Injury Address Line 1", "INJRY_ADDR1", 1)]
+        public string INJRY_ADDR1
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INJRY_ADDR1", "InjuryLocationAddress", "address", "addressLine1", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INJRY_ADDR1", "InjuryLocationAddress", "address", "addressLine1", false, value);
+                }
+            }
+        }
+
+        /// <summary>Injury Zipcode</summary>
+        [IJEField(249, 4558, 10, "Injury Zipcode", "INJRY_ZIP9", 1)]
+        public string INJRY_ZIP9
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INJRY_ZIP9", "InjuryLocationAddress", "address", "addressZip", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INJRY_ZIP9", "InjuryLocationAddress", "address", "addressZip", false, value);
+                }
+            }
+        }
+
+        /// <summary>Informant Given Name</summary>
+        [IJEField(250, 4568, 200, "Informant Given Name", "INFO_GIVEN_NME", 1)]
+        public string INFO_GIVEN_NME
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_GIVEN_NME", "InformantGivenName");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_GIVEN_NME", "InformantGivenName", value);
+            }
+        }
+
+        /// <summary>Informant Family Name</summary>
+        [IJEField(251, 4768, 100, "Informant Family Name", "INFO_LST_NME", 1)]
+        public string INFO_LST_NME
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_LST_NME", "InformantFamilyName");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_LST_NME", "InformantFamilyName", value);
+            }
+        }
+
+        /// <summary>Informant Address Line 1</summary>
+        [IJEField(252, 4868, 512, "Informant Address Line 1", "INFO_ADDR1", 1)]
+        public string INFO_ADDR1
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INFO_ADDR1", "InformantAddress", "address", "addressLine1", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INFO_ADDR1", "InformantAddress", "address", "addressLine1", false, value);
+                }
+            }
+        }
+
+        /// <summary>Informant City</summary>
+        [IJEField(253, 5380, 112, "Informant City", "INFO_CITY", 1)]
+        public string INFO_CITY
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INFO_CITY", "InformantAddress", "address", "addressCity", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INFO_CITY", "InformantAddress", "address", "addressCity", false, value);
+                }
+            }
+        }
+
+        /// <summary>Informant State</summary>
+        [IJEField(254, 5492, 112, "Informant State", "INFO_STATE", 1)]
+        public string INFO_STATE
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INFO_STATE", "InformantAddress", "address", "addressState", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INFO_STATE", "InformantAddress", "address", "addressState", false, value);
+                }
+            }
+        }
+
+        /// <summary>Informant Zip</summary>
+        [IJEField(255, 5604, 10, "Informant Zip", "INFO_ZIP", 1)]
+        public string INFO_ZIP
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INFO_ZIP", "InformantAddress", "address", "addressZip", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INFO_ZIP", "InformantAddress", "address", "addressZip", false, value);
+                }
+            }
+        }
+
+
+
     }
 }

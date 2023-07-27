@@ -128,7 +128,7 @@ namespace VRDR
             ije.INTERVAL1A = "4 Hours";
             ije.COD1B = "Eclampsia";
             ije.INTERVAL1B = "3 Months";
-            ije.PLACE1_1 = "Y";
+            //ije.PLACE1_1 = "Y";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
@@ -226,7 +226,7 @@ namespace VRDR
             ije.COD1C = "Epilepsy";
             ije.INTERVAL1C = "20 Years";
             ije.OTHERCONDITION = "Hypertension, Depression, Migraine";
-            ije.PLACE8_1 = "00000033";
+            //ije.PLACE8_1 = "00000033";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
@@ -310,7 +310,7 @@ namespace VRDR
             ije.COUNTRYTEXT_R = "United States";
             ije.ADDRESS_R = "2722 N Pin Oak Dr";
             ije.COD1A = "Pending";
-            ije.PLACE20 = "043-A-110234";
+            //ije.PLACE20 = "043-A-110234";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
