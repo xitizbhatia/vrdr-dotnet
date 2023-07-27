@@ -5450,13 +5450,13 @@ namespace VRDR
         {
             get
             {
-                return Dictionary_Geo_Get("INJRY_ADDR1", "InjuryLocationAddress", "address", "addressLine1", false);
+                return Dictionary_Geo_Get("INJRY_ADDR1", "InjuryLocationAddress", "address", "line1", false);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Dictionary_Geo_Set("INJRY_ADDR1", "InjuryLocationAddress", "address", "addressLine1", false, value);
+                    Dictionary_Geo_Set("INJRY_ADDR1", "InjuryLocationAddress", "address", "line1", false, value);
                 }
             }
         }
@@ -5467,13 +5467,13 @@ namespace VRDR
         {
             get
             {
-                return Dictionary_Geo_Get("INJRY_ZIP9", "InjuryLocationAddress", "address", "addressZip", false);
+                return Dictionary_Geo_Get("INJRY_ZIP9", "InjuryLocationAddress", "address", "zip", false);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Dictionary_Geo_Set("INJRY_ZIP9", "InjuryLocationAddress", "address", "addressZip", false, value);
+                    Dictionary_Geo_Set("INJRY_ZIP9", "InjuryLocationAddress", "address", "zip", false, value);
                 }
             }
         }
@@ -5506,20 +5506,17 @@ namespace VRDR
             }
         }
 
-        /// <summary>Informant Address Line 1</summary>
-        [IJEField(252, 4868, 512, "Informant Address Line 1", "INFO_ADDR1", 1)]
-        public string INFO_ADDR1
+        /// <summary>Informant Address One Line</summary>
+        [IJEField(252, 4868, 512, "Informant Address One Line", "INFO_ADDR_ONE_LINE", 1)]
+        public string INFO_ADDR_ONE_LINE
         {
             get
             {
-                return Dictionary_Geo_Get("INFO_ADDR1", "InformantAddress", "address", "addressLine1", false);
+                return LeftJustified_Get("INFO_ADDR_ONE_LINE", "InformantAddressOneLine");
             }
             set
             {
-                if (!String.IsNullOrWhiteSpace(value))
-                {
-                    Dictionary_Geo_Set("INFO_ADDR1", "InformantAddress", "address", "addressLine1", false, value);
-                }
+                LeftJustified_Set("INFO_ADDR_ONE_LINE", "InformantAddressOneLine", value);
             }
         }
 

@@ -3245,33 +3245,14 @@
             <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantFamilyName}");</para>
             </example>
         </member>
-        <member name="P:VRDR.DeathRecord.InformantAddress">
-            <summary>Informant Address.</summary>
-            <value>Informant Address. A Dictionary representing an address, containing the following key/value pairs:
-            <para>"addressLine1" - address, line one</para>
-            <para>"addressLine2" - address, line two</para>
-            <para>"addressCity" - address, city</para>
-            <para>"addressCounty" - address, county</para>
-            <para>"addressState" - address, state</para>
-            <para>"addressZip" - address, zip</para>
-            <para>"addressCountry" - address, country</para>
-            </value>
+        <member name="P:VRDR.DeathRecord.InformantAddressOneLine">
+            <summary>Informant Address One Line.</summary>
+            <value>Informant Address. A address line representing the full informant address</value>
             <example>
             <para>// Setter:</para>
-            <para>Dictionary&lt;string, string&gt; address = new Dictionary&lt;string, string&gt;();</para>
-            <para>address.Add("addressLine1", "123456 Test Street");</para>
-            <para>address.Add("addressLine2", "Unit 3");</para>
-            <para>address.Add("addressCity", "Boston");</para>
-            <para>address.Add("addressCounty", "Suffolk");</para>
-            <para>address.Add("addressState", "MA");</para>
-            <para>address.Add("addressZip", "12345");</para>
-            <para>address.Add("addressCountry", "US");</para>
-            <para>DeathRecord.InformantAddress = address;</para>
+            <para>ExampleDeathRecord.InformantAddressOneLine = "Smith";</para>
             <para>// Getter:</para>
-            <para>foreach(var pair in DeathRecord.InformantAddress)</para>
-            <para>{</para>
-            <para>  Console.WriteLine($"\Informant Address key: {pair.Key}: value: {pair.Value}");</para>
-            <para>};</para>
+            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantAddressOneLine}");</para>
             </example>
         </member>
         <member name="M:VRDR.DeathRecord.GetPartialDate(Hl7.Fhir.Model.Extension,System.String)">
@@ -4426,8 +4407,8 @@
         <member name="P:VRDR.IJEMortality.INFO_LST_NME">
             <summary>Informant Family Name</summary>
         </member>
-        <member name="P:VRDR.IJEMortality.INFO_ADDR1">
-            <summary>Informant Address Line 1</summary>
+        <member name="P:VRDR.IJEMortality.INFO_ADDR_ONE_LINE">
+            <summary>Informant Address One Line</summary>
         </member>
         <member name="P:VRDR.IJEMortality.INFO_CITY">
             <summary>Informant City</summary>

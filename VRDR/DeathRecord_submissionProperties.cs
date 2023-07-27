@@ -12,6 +12,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Hl7.FhirPath;
 using Newtonsoft.Json;
+using System.Net;
 
 // DeathRecord_submissionProperties.cs
 //    These fields are used primarily for submitting death records to NCHS.  Some are also used in response messages from NCHS to EDRS corresponding to TRX and MRE content.
@@ -2848,7 +2849,7 @@ namespace VRDR
             set
             {
                 Patient.ContactComponent component = null;
-                if (Decedent != null && Decedent.Contact == null)
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count()==0)))
                 {
                     component = new Patient.ContactComponent();
                     Decedent.Contact.Add(component);
@@ -7071,7 +7072,7 @@ namespace VRDR
                 {
                     return;
                 }
-                if (Decedent != null && Decedent.Contact == null)
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
                 {
                     component = new Patient.ContactComponent();
                     Decedent.Contact.Add(component);
@@ -7127,7 +7128,7 @@ namespace VRDR
                 {
                     return;
                 }
-                if (Decedent != null && Decedent.Contact == null)
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
                 {
                     component = new Patient.ContactComponent();
                     Decedent.Contact.Add(component);
@@ -7150,57 +7151,29 @@ namespace VRDR
         }
 
 
-        /// <summary>Informant Address.</summary>
-        /// <value>Informant Address. A Dictionary representing an address, containing the following key/value pairs:
-        /// <para>"addressLine1" - address, line one</para>
-        /// <para>"addressLine2" - address, line two</para>
-        /// <para>"addressCity" - address, city</para>
-        /// <para>"addressCounty" - address, county</para>
-        /// <para>"addressState" - address, state</para>
-        /// <para>"addressZip" - address, zip</para>
-        /// <para>"addressCountry" - address, country</para>
-        /// </value>
+        /// <summary>Informant Address One Line.</summary>
+        /// <value>Informant Address. A address line representing the full informant address</value>
         /// <example>
         /// <para>// Setter:</para>
-        /// <para>Dictionary&lt;string, string&gt; address = new Dictionary&lt;string, string&gt;();</para>
-        /// <para>address.Add("addressLine1", "123456 Test Street");</para>
-        /// <para>address.Add("addressLine2", "Unit 3");</para>
-        /// <para>address.Add("addressCity", "Boston");</para>
-        /// <para>address.Add("addressCounty", "Suffolk");</para>
-        /// <para>address.Add("addressState", "MA");</para>
-        /// <para>address.Add("addressZip", "12345");</para>
-        /// <para>address.Add("addressCountry", "US");</para>
-        /// <para>DeathRecord.InformantAddress = address;</para>
+        /// <para>ExampleDeathRecord.InformantAddressOneLine = "Smith";</para>
         /// <para>// Getter:</para>
-        /// <para>foreach(var pair in DeathRecord.InformantAddress)</para>
-        /// <para>{</para>
-        /// <para>  Console.WriteLine($"\Informant Address key: {pair.Key}: value: {pair.Value}");</para>
-        /// <para>};</para>
+        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantAddressOneLine}");</para>
         /// </example>
-        [Property("Informant Address", Property.Types.Dictionary, "Decedent Demographics", "Informant Address.", true, IGURL.Decedent, true, 24)]
-        [PropertyParam("addressLine1", "address, line one")]
-        [PropertyParam("addressLine2", "address, line two")]
-        [PropertyParam("addressCity", "address, city")]
-        [PropertyParam("addressCityC", "address, city code")]
-        [PropertyParam("addressCounty", "address, county")]
-        [PropertyParam("addressCountyC", "address, county code")]
-        [PropertyParam("addressState", "address, state")]
-        [PropertyParam("addressZip", "address, zip")]
-        [PropertyParam("addressCountry", "address, country")]
+        [Property("Informant Address One Line", Property.Types.String, "Decedent Demographics", "Informant Address One Line.", true, IGURL.Decedent, true, 24)]
         [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
-        public Dictionary<string, string> InformantAddress
+        public string InformantAddressOneLine
         {
             get
             {
                 if (Decedent != null && Decedent.Contact != null)
                 {
                     var contact = Decedent.Contact.FirstOrDefault();
-                    if (contact != null && contact.Address != null)
+                    if (contact != null && contact.Address != null && contact.Address.Line != null && contact.Address.Line.Count()>0)
                     {
-                        return AddressToDict(contact.Address);
+                        return contact.Address.Line.ElementAt(0);
                     }
                 }
-                return EmptyAddrDict();
+                return null;
             }
             set
             {
@@ -7210,13 +7183,15 @@ namespace VRDR
                 {
                     return;
                 }
-                if (Decedent != null && Decedent.Contact == null)
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
                 {
                     component = new Patient.ContactComponent();
                     Decedent.Contact.Add(component);
                 }
+                Dictionary <string, string> address = new Dictionary<string, string>();
+                address.Add("addressLine1", value);
                 component = Decedent.Contact.FirstOrDefault();
-                component.Address = DictToAddress(value);
+                component.Address = DictToAddress(address);
             }
         }
 
