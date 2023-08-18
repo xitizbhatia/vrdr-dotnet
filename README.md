@@ -6,7 +6,7 @@
 
 This repository includes .NET (C#) code for
 
-- Producing and consuming the Vital Records Death Reporting (VRDR) Health Level 7 (HL7) Fast Healthcare Interoperability Resources (FHIR) standard. [Click here to view the FHIR Implementation Guide STU2](http://hl7.org/fhir/us/vrdr/2021Sep/).
+- Producing and consuming the Vital Records Death Reporting (VRDR) Health Level 7 (HL7) Fast Healthcare Interoperability Resources (FHIR) standard. [Click here to view the FHIR Implementation Guide STU2.1](http://hl7.org/fhir/us/vrdr/STU2.1).
 - Producing and consuming FHIR messages for the exchange of VRDR documents.
 - Support for converting VRDR FHIR records to and from the Inter-Jurisdictional Exchange (IJE) Mortality format, as well as companion microservice for performing conversions.
 - This codebase covers the subset of the IJE fields listed in this [spreadsheet](VRDRdotNETLibraryCoverage.csv).
@@ -30,36 +30,36 @@ Interactions with NCHS are governed by the CI build version of the VRDR and Vita
 </tr>
 </tr>
 <tr>
-<td style="text-align: center;"><a href="http://build.fhir.org/ig/HL7/vrdr/">STU2 CI build version</a></td>
+<td style="text-align: center;"><a href="http://build.fhir.org/ig/HL7/vrdr/">STU2.1 CI build version</a></td>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9.1</a></td>
 <td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview19</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
+<td style="text-align: center;">V4.0.3</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
+</tr>
+<tr>
+<td style="text-align: center;"><a href="http://hl7.org/fhir/us/vrdr/STU2.1/">STU2.1 Published</a></td>
+<td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9.1</a></td>
+<td style="text-align: center;">R4</td>
+<td style="text-align: center;">V4.0.3</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
 </tr>
 <tr>
 <td style="text-align: center;"><a href="http://hl7.org/fhir/us/vrdr/STU2/">STU2 Published</a></td>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9.1</a></td>
 <td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview19</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
+<td style="text-align: center;">V4.0.3</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
 </tr>
 <tr>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/HL7/vrdr/">STU2 v1.3</a></td>
 <td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9</a></td>
 <td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview19</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
-</tr>
-<tr>
-<td style="text-align: center;"><a href="http://hl7.org/fhir/us/vrdr/STU2/">STU2 Published</a></td>
-<td style="text-align: center;"><a href="http://build.fhir.org/ig/nightingaleproject/vital_records_fhir_messaging_ig/branches/main/index.html">v0.9.1</a></td>
-<td style="text-align: center;">R4</td>
-<td style="text-align: center;">V4.0.0-preview19</td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
-<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.0-preview19">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.0-preview19"> github</a></td>
+<td style="text-align: center;">V4.0.3</td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
+<td style="text-align: center;"><a href="https://www.nuget.org/packages/VRDR.Messaging/4.0.3">nuget</a> <a href="https://github.com/nightingaleproject/vrdr-dotnet/releases/tag/4.0.3"> github</a></td>
 </tr>
 <tr>
 <td style="text-align: center;">STU1</td>
@@ -98,7 +98,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR" Version="4.0.0-preview19" />
+  <PackageReference Include="VRDR" Version="4.0.3" />
   ...
 </ItemGroup>
 ```
@@ -204,6 +204,11 @@ using the DeathRecord class
 class
 3. Resetting the middle name if the first name is set again when using the IJEMortality class;
 setting the first name and then the middle name ensures no issues will occur.
+
+For the decedent's last name, if the family name, denoted as FamilyName in FHIR, is missing or unknown,
+its corresponding LNAME in IJE has value of "UNKNOWN". Vice versa, if its LNAME in IJE is "UNKNOWN",
+its corresponding FamilyName in FHIR has value of NULL. All other values have 1-to-1 mappings between
+FHIR's FamilyName and IJE's LNAME.
 
 #### Helper Properties for Value Sets
 
@@ -355,7 +360,7 @@ This package is published on NuGet, so including it is as easy as:
 ```xml
 <ItemGroup>
   ...
-  <PackageReference Include="VRDR.Messaging" Version="4.0.0-preview19" />
+  <PackageReference Include="VRDR.Messaging" Version="4.0.3" />
   ...
 </ItemGroup>
 ```
@@ -418,7 +423,11 @@ CauseOfDeathCodingMessage message = new CauseOfDeathCodingMessage(ije.ToDeathRec
 
 // Set the source and destination
 message.MessageSource = "http://nchs.cdc.gov/vrdr_submission";
+// Set a single destination using MessageDestination (not plural).
 message.MessageDestination = "https://example.org/jurisdiction/endpoint";
+// Set multiple destinations with a comma separated list where each endpoint in the string is seperated by a comma. Use MessageDestinations (plural).
+// Messages without NCHS in this list of destinations will not be sent to NCHS.
+message.MessageDestinations = "https://example.org/jurisdiction/endpoint,https://example.org/jurisdiction/endpoint";
 
 // Create a JSON representation of the coding response message
 string jsonMessage = message.ToJSON();
@@ -441,6 +450,27 @@ The C# tests can be run separately from the other tests by executing the followi
 ```bash
 dotnet test
 ```
+
+#### Filtering tests
+Tests have been added to test the filtering process as well as the parsing of filtered files to ensure a valid file is generated from filtering.
+These tests will run with the above commands.
+
+##### Filtering tests description
+
+**ADDRESS_DShouldEqual**: Tests that the `DeathLocationAddress` field isn't filtered out.  
+**LIMITSShouldEqual_1**: Tests that the `ResidenceWithinCityLimits` field isn't filtered out. [Related to ticket: https://ruvos.atlassian.net/browse/STEVESD-2582]  
+**LIMITSShouldEqual_2**: Tests that the `ResidenceWithinCityLimits` field isn't filtered out. [Related to ticket: https://ruvos.atlassian.net/browse/STEVESD-2582]  
+**PreFilteredFileEqualsFilteredFile**: Tests that filtering through all fields in a file results in all fields being the same before and after filtering.  
+**FilteringNoFields**: Tests filtering no fields results in a valid Death Record.  
+**FilteringPlusParsingTest_1**: Tests filtering results in a valid Death Record.  
+**FilteringPlusParsingTest_2**: Tests filtering results in a valid Death Record.  
+**FilteringPlusParsingTest_3**: Tests filtering results in a valid Death Record.  
+**FilteringPlusParsingTest_4**: Tests filtering results in a valid Death Record.  
+**FilteringPlusParsingTest_5**: Tests filtering results in a valid Death Record.  
+**FilterAllFields_1**: Tests filtering all fields results in a valid Death Record.  
+**FilterAllFields_2**: Tests filtering all fields results in a valid Death Record.  
+**FilterAllFields_3**: Tests filtering all fields results in a valid Death Record.  
+**FilterFilePerJurisdictionFilters**: Tests that each jurisdictions filter results in a valid Death Record.  
 
 ### VRDR.CLI
 This directory contains a sample command line interface app that uses the VRDR library to do a few different things.
@@ -491,9 +521,10 @@ dotnet run --project VRDR.CLI connectathon 1 100 MA
 # Parameters are:
 #    - initial certificate number
 #    - number of records to generate (each with cert_no one greater than its predecessor)
+#	 - Submitting jurisdiction
 #    - output directory (must exist)
-#    - SUbmitting jurisdiction
-dotnet run --project VRDR.CLI generaterecords 23 100 ./generatedrecords CT
+#    
+dotnet run --project VRDR.CLI generaterecords 23 100 CT ./generatedrecords 
 
 # Generate a verbose JSON description of the record (in the format used to drive Canary)
 dotnet run --project VRDR.CLI description VRDR.CLI/1.json
@@ -528,8 +559,17 @@ dotnet run --project VRDR.CLI resubmit VRDR.CLI/1.json
 # Create an acknowledgement FHIR message for a submission FHIR message
 dotnet run --project VRDR.CLI ack VRDR.CLI/1submit.json
 
+# Create an alias FHIR message for a FHIR death record (1 argument: FHIR death record)
+dotnet run --project VRDR.CLI alias VRDR.Tests/fixtures/json/DeathRecord1.json
+
+# Creates a void message for a Death Record (1 argument: FHIR death record; one optional argument: number of records to void)
+dotnet run --project VRDR.CLI void VRDR.Tests/fixtures/json/DeathRecord1.json
+
 # Extract and show the codes in a coding response message
 dotnet run --project VRDR.CLI showcodes VRDR.CLI/1coding.json
+
+# Filter file and write output as `filteredFile.json`
+dotnet run --project VRDR.CLI filter VRDR.CLI/1coding.json
 ```
 
 ### VRDR.Client
@@ -553,6 +593,30 @@ You can include a locally downloaded copy of the library instead of the NuGet ve
 ```
 
 #### Example Usage
+
+Using VOID and ALIAS fields of IJEMortality object. Use case: VOID is for voiding the Death Record, and should be sent using a DeathRecordVoidMessage. ALIAS is for denoting optional records submitted only for National Death Index purposes, and should be sent using a DeathRecordAliasMessage. Both are mainly sent by Vital Records Jurisdiction.
+```
+  // Example getting values of VOID and ALIAS fields, respectively
+  IJEMortality ijeMortality = new IJEMortality(ijeFile);
+  string voidFieldValue = ijeMortality.VOID;
+  string aliasFieldValue = ijeMortality.ALIAS;
+
+  // Example setting values of VOID and ALIAS fields, respectively
+  IJEMortality ijeMortality = new IJEMortality(ijeFile);
+  ijeMortality.VOID = "0"; // flag "OFF"
+  ijeMortality.VOID = "1";  // flag "ON"
+  ijeMortality.ALIAS = "0"; // flag "OFF"
+  ijeMortality.ALIAS = "1"; // flag "ON"
+
+Using MessageBundle of BaseMessage. Use case: as a FHIR Bundle, it is for initializing various message types
+```
+  // Example get MessageBundle after setting it (in BaseMessage) by constructor
+  DeathRecordSubmissionMessage message = new DeathRecordSubmissionMessage();
+  Bundle messageBundle = message.MessageBundle;
+  or
+  BaseMessage message = new DeathRecordUpdateMessage();
+  Bundle messageBundle = message.MessageBundle;
+  
 Authenticate to the NVSS API Server
 ```
   // Example SAMS credentials
@@ -613,6 +677,99 @@ POST a batch of FHIR Message to the NVSS API Server with your authenticated clie
   // ... handle success or failure
 ```
 
+#### For Library Developers
+
+Attributes (equivalent to Annotations in Java) are used in .NET to promote loose coupling via  “declarative” programming, and add Metadata to the target program entity, namely .NET assembly, module, for global scope, and class, interface, struct, enum, constructor, delegate, field, property, method, parameter, return value, and event, for non-global scope. They can be either built-in or custom, and denoted by pair or pair(s), for mutltiple attributes, of square brackets [...] surrounding the target entity. As shown in [VRDR/DeathRecord_submissionProperties.cs](../master/VRDR/DeathRecord_submissionProperties.cs), the custom attributes [Property(...)] and [FHIRPath(...)] for each of the DeathRecord's properties, and [PropertyParam(...)] for many of its properties, add relevant sets of Metadata to their targets, based on their definitions and orders of formal parameters given in [VRDR/DeathRecord_util.cs](../master/VRDR/DeathRecord_util.cs), where custom attribute [Property(...)], as in
+```
+        [Property("Death Record Identifier", Property.Types.String, "Death Certification", "Death Record identifier.", true, IGURL.DeathCertificate, true, 4)]
+        [FHIRPath("Bundle", "identifier")]
+        public string DeathRecordIdentifier
+        {
+            get
+            {
+                if (Bundle != null && Bundle.Identifier != null)
+                {
+                    return Bundle.Identifier.Value;
+                }
+                return null;
+            }
+            // The setter is private because the value is derived so should never be set directly
+            private set
+            {
+                if (String.IsNullOrWhiteSpace(value))
+                {
+                    return;
+                }
+                if (Bundle.Identifier == null)
+                {
+                    Bundle.Identifier = new Identifier();
+                }
+                Bundle.Identifier.Value = value;
+                Bundle.Identifier.System = "http://nchs.cdc.gov/vrdr_id";
+            }
+        }
+```
+for example, can be seen mapped to the following custom attribute class with the same name:
+
+`public class Property : System.Attribute`
+
+and with the following constructor:
+
+`public Property(string name, Types type, string category, string description, bool serialize, string igurl, bool capturedInIJE, int priority = 4)`
+
+Similarly, custom attribute [FHIRPath( ... )] is mapped to custom attribute class FHIRPath with public constructor `FHIRPath(string path, string element)`
+
+and custom attribute [PropertyParam( ... )] is mapped to custom attribute class PropertyParam with public constructor `PropertyParam(string key, string description)`
+
+Custom attribute classes are typically derived, either directly or indirectly, from built-in abstract class System.Attribute, just as illustrated here.
+
+The property values of these Metadata/attributes for DeathRecord are set and retrieved via setters and getters, respectively, based on individual sets of rules also as shown in [VRDR/DeathRecord_submissionProperties.cs](../master/VRDR/DeathRecord_submissionProperties.cs)
+
+Snippet from [VRDR.CLI/Program.cs](../master/VRDR.CLI/Program.cs#L479-L489) gives an example of how these custom attributes can be used:
+```
+DeathRecord d = new DeathRecord(File.ReadAllText(args[1]));
+IJEMortality ije1 = new IJEMortality(d, false);
+// Loop over every property (these are the fields); Order by priority
+List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Location).ToList();
+foreach (PropertyInfo property in properties)
+{
+    // Grab the field attributes
+    IJEField info = property.GetCustomAttribute<IJEField>();
+    // Grab the field value
+    string field = Convert.ToString(property.GetValue(ije1, null));
+}   
+```
+Custom attributes are also used extensively in IJEField's properties, one of which is shown below as an example.
+```
+        [IJEField(1, 1, 4, "Date of Death--Year", "DOD_YR", 1)]
+        public string DOD_YR
+        {
+            get
+            {
+                return NumericAllowingUnknown_Get("DOD_YR", "DeathYear");
+            }
+            set
+            {
+                NumericAllowingUnknown_Set("DOD_YR", "DeathYear", value);
+            }
+        }
+```
+which is mapped to the following custom attribute class with the same name:
+
+`public class IJEField : System.Attribute`
+
+and with the following constructor:
+
+`public IJEField(int field, int location, int length, string contents, string name, int priority)` in the same file [VRDR/IJEMortality.cs](../master/VRDR/IJEMortality.cs)
+
+
+Official resources:<br/>
+https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/reflection-and-attributes/attribute-tutorial<br/>
+https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/attributes<br/>
+https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/reflection-and-attributes/creating-custom-attributes<br/>
+https://learn.microsoft.com/en-us/dotnet/standard/attributes/writing-custom-attributes<br/><br/>
+
+
 ### VRDR.HTTP
 This directory contains a deployable microservice that exposes endpoints for conversion of IJE flat files to DeathRecord JSON or XML, and vice versa.
 
@@ -643,31 +800,33 @@ dotnet run --project VRDR.HTTP
 
 The service will be listening locally at `http://localhost:8080`.
 
-#### Contributing
-Changes related to an upcoming IG version should be merged to the IG-develop-vx.x.x branch. Bug fixes related to the current version should be merged to the master branch and a new release should be created.
+## Contributing
+This repository follows [Semantic Versioning](https://semver.org/). Bug fixes and feature enhancements should be merged into the `master` branch via Pull Requests (PR), instead of directly committing to the `master` branch. Once a PR is merged, a new version of the library will be automatically published to NuGet.
 
-##### Create a branch for IG changes:
 ```
-git fetch origin
-git checkout IG-develop-vx.x.x
-git pull origin IG-develop-vx.x.x
-git checkout -b <your-ticketnumber-branch-name>
-<commit-your-IG-related-changes>
-<test-with-changes-from-master>
-git push origin <your-ticketnumber-branch-name>
-```
-Create merge request to the IG-develop-vx.x.x branch.
-
-##### Create a branch for bug fixes in master
-```
-git checkout master
 git pull origin master
-git checkout -b <your-ticketnumber-branch-name>
-<commit-bug-related-changes>
-git push origin <your-ticketnumber-branch-name>
+git checkout -b <your-working-branch-name>
+<commit-your-changes>
+<test-with-changes-from-master>
+git push -u origin <your-working-branch-name>
 ```
-Create a merge request to the master branch.
-Finally, merge master into the IG-develop-vx.x.x branch.
+Once the working branch is pushed to the respository, follow these steps:
+
+1. Create a new PR with the working branch as base, and master as head.
+1. The PR title and description should follow the [Conventional Commit](https://www.conventionalcommits.org/en/v1.0.0/) format. The PR title should be structured as  `<type>[optional scope]: <short-message>`, where a type can be:
+  - **feat:** introduces a new feature to the codebase (correlates with MINOR in Semantic Versioning).
+  - **fix:** patches a bug in the codebase (correlates with PATCH in Semantic Versioning).
+  - Other types such as `build`, `chore`, `ci`, `docs`, `style`, `refactor`, `perf`, `test`, and others are allowed as well (correlates with PATCH in Semantic Versioning).
+  
+  (The PR title needs to be concise and conform to the style guide for change tracking purposes. The PR description can include additional details about the changes associated with this PR.)
+1. Assign one or more reviewers to review your changes. At least one approved review is required before the PR can be merged.
+1. If the PR addresses an existing Issue, link the PR with the Issue to resolve it through the PR.
+1. Once the PR is approved by a reviewer, with all discussions resolved and all checks passed, click the Squash and Merge button. Avoid using "Create a merge commit." The PR title and description will automatically fill in the commit message boxes.
+
+#### Release Pull Request
+
+With each commit to the default branch, a release pull request will be automatically created/updated. This PR increments the package version and updates the CHANGELOG using a special branch named `actions/release`. You don't need to wait for this special PR to be merged into the default branch before merging additional pull requests. It consolidates subsequent commits to the default branch; only one instance of release pull request will be active.
+
 
 #### Publishing a Version
 
@@ -700,4 +859,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 For questions or comments about vrdr-dotnet, please send email to
 
-    cdc-nvss-feedback-list@lists.mitre.org
+    nvssmodernization@cdc.gov
