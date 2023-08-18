@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['causeofdeathentityaxisbuilder_0',['CauseOfDeathEntityAxisBuilder',['../class_v_r_d_r_1_1_cause_of_death_entity_axis_builder.html',1,'VRDR']]],
-  ['causeofdeathentityaxisentry_1',['CauseOfDeathEntityAxisEntry',['../class_v_r_d_r_1_1_cause_of_death_entity_axis_entry.html',1,'VRDR']]],
-  ['codingresponsemessage_2',['CodingResponseMessage',['../class_v_r_d_r_1_1_coding_response_message.html',1,'VRDR']]],
-  ['codingupdatemessage_3',['CodingUpdateMessage',['../class_v_r_d_r_1_1_coding_update_message.html',1,'VRDR']]]
+  ['causeofdeathcodingmessage_0',['CauseOfDeathCodingMessage',['../class_v_r_d_r_1_1_cause_of_death_coding_message.html',1,'VRDR']]],
+  ['causeofdeathcodingupdatemessage_1',['CauseOfDeathCodingUpdateMessage',['../class_v_r_d_r_1_1_cause_of_death_coding_update_message.html',1,'VRDR']]],
+  ['client_2',['Client',['../class_v_r_d_r_1_1_client.html',1,'VRDR']]],
+  ['connectathon_3',['Connectathon',['../class_v_r_d_r_1_1_connectathon.html',1,'VRDR']]],
+  ['credentials_4',['Credentials',['../class_v_r_d_r_1_1_credentials.html',1,'VRDR']]]
 ];

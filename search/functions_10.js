@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['voidmessage_0',['VoidMessage',['../class_v_r_d_r_1_1_void_message.html#aec9b6037da346dff7a8ce90100fa08a0',1,'VRDR.VoidMessage.VoidMessage()'],['../class_v_r_d_r_1_1_void_message.html#a1c347502013d9bd0c52e572c2c57c243',1,'VRDR.VoidMessage.VoidMessage(DeathRecord record)']]]
+  ['writerecordasxml_0',['WriteRecordAsXml',['../class_v_r_d_r_1_1_connectathon.html#afe3410925e22daf283bb19fa2a1d7c05',1,'VRDR::Connectathon']]]
 ];
