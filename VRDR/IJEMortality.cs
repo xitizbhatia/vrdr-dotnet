@@ -307,6 +307,15 @@ namespace VRDR
                 {
                     return "";
                 }
+                int year;
+                if (Int32.TryParse(Truncate(value, info.Length).Substring(4, 4), out year))
+                {
+                    // Treat 9999 as blank
+                    if (year != 9999)
+                    {
+                        date = new DateTimeOffset(year, date.Month, date.Day, date.Hour, date.Minute, date.Second, date.Millisecond, TimeSpan.Zero);
+                    }
+                }
                 int month;
                 if (Int32.TryParse(Truncate(value, info.Length).Substring(0, 2), out month))
                 {
@@ -323,15 +332,6 @@ namespace VRDR
                     if (day != 99)
                     {
                         date = new DateTimeOffset(date.Year, date.Month, day, date.Hour, date.Minute, date.Second, date.Millisecond, TimeSpan.Zero);
-                    }
-                }
-                int year;
-                if (Int32.TryParse(Truncate(value, info.Length).Substring(4, 4), out year))
-                {
-                    // Treat 9999 as blank
-                    if (year != 9999)
-                    {
-                        date = new DateTimeOffset(year, date.Month, date.Day, date.Hour, date.Minute, date.Second, date.Millisecond, TimeSpan.Zero);
                     }
                 }
             }
