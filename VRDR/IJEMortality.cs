@@ -5526,14 +5526,11 @@ namespace VRDR
         {
             get
             {
-                return Dictionary_Geo_Get("INFO_CITY", "InformantAddress", "address", "addressCity", false);
+                return LeftJustified_Get("INFO_CITY", "InformantAddressCity");
             }
             set
             {
-                if (!String.IsNullOrWhiteSpace(value))
-                {
-                    Dictionary_Geo_Set("INFO_CITY", "InformantAddress", "address", "addressCity", false, value);
-                }
+                LeftJustified_Set("INFO_CITY", "InformantAddressCity", value);
             }
         }
 
@@ -5543,14 +5540,11 @@ namespace VRDR
         {
             get
             {
-                return Dictionary_Geo_Get("INFO_STATE", "InformantAddress", "address", "addressState", false);
+                return LeftJustified_Get("INFO_STATE", "InformantAddressState");
             }
             set
             {
-                if (!String.IsNullOrWhiteSpace(value))
-                {
-                    Dictionary_Geo_Set("INFO_STATE", "InformantAddress", "address", "addressState", false, value);
-                }
+                LeftJustified_Set("INFO_STATE", "InformantAddressState", value);
             }
         }
 
@@ -5560,13 +5554,13 @@ namespace VRDR
         {
             get
             {
-                return Dictionary_Geo_Get("INFO_ZIP", "InformantAddress", "address", "addressZip", false);
+                return LeftJustified_Get("INFO_ZIP", "InformantAddressZip");
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Dictionary_Geo_Set("INFO_ZIP", "InformantAddress", "address", "addressZip", false, value);
+                    LeftJustified_Set("INFO_ZIP", "InformantAddressZip", value);
                 }
             }
         }

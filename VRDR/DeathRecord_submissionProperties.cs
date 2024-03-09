@@ -7155,9 +7155,9 @@ namespace VRDR
         /// <value>Informant Address. A address line representing the full informant address</value>
         /// <example>
         /// <para>// Setter:</para>
-        /// <para>ExampleDeathRecord.InformantAddressOneLine = "Smith";</para>
+        /// <para>ExampleDeathRecord.InformantAddressOneLine = "100W Kyle St Washington 9801";</para>
         /// <para>// Getter:</para>
-        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantAddressOneLine}");</para>
+        /// <para>Console.WriteLine($"Informant's Address in one line: {ExampleDeathRecord.InformantAddressOneLine}");</para>
         /// </example>
         [Property("Informant Address One Line", Property.Types.String, "Decedent Demographics", "Informant Address One Line.", true, IGURL.Decedent, true, 24)]
         [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
@@ -7192,6 +7192,99 @@ namespace VRDR
                 address.Add("addressLine1", value);
                 component = Decedent.Contact.FirstOrDefault();
                 component.Address = DictToAddress(address);
+            }
+        }
+
+        /// <summary>Informant Address City. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address City. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressCity = "Seattle";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address City: {ExampleDeathRecord.InformantAddressCity}");</para>
+        /// </example>
+        [Property("Informant Address City", Property.Types.String, "Decedent Demographics", "Informant Address City.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressCity
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.City != null)
+                    {
+                        return contact.Address.City;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
+            }
+        }
+
+
+        /// <summary>Informant Address State. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address State. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressState = "Washington";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address State: {ExampleDeathRecord.InformantAddressState}");</para>
+        /// </example>
+        [Property("Informant Address State", Property.Types.String, "Decedent Demographics", "Informant Address State.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressState
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.State != null)
+                    {
+                        return contact.Address.State;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
+            }
+        }
+
+
+
+        /// <summary>Informant Address Zip. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address Zip. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressZip = "98701";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address Zip: {ExampleDeathRecord.InformantAddressZip}");</para>
+        /// </example>
+        [Property("Informant Address Zip", Property.Types.String, "Decedent Demographics", "Informant Address Zip.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressZip
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.PostalCode != null)
+                    {
+                        return contact.Address.PostalCode;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
             }
         }
 

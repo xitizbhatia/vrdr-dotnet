@@ -3250,9 +3250,39 @@
             <value>Informant Address. A address line representing the full informant address</value>
             <example>
             <para>// Setter:</para>
-            <para>ExampleDeathRecord.InformantAddressOneLine = "Smith";</para>
+            <para>ExampleDeathRecord.InformantAddressOneLine = "100W Kyle St Washington 9801";</para>
             <para>// Getter:</para>
-            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantAddressOneLine}");</para>
+            <para>Console.WriteLine($"Informant's Address in one line: {ExampleDeathRecord.InformantAddressOneLine}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressCity">
+            <summary>Informant Address City. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address City. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressCity = "Seattle";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address City: {ExampleDeathRecord.InformantAddressCity}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressState">
+            <summary>Informant Address State. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address State. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressState = "Washington";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address State: {ExampleDeathRecord.InformantAddressState}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressZip">
+            <summary>Informant Address Zip. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address Zip. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressZip = "98701";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address Zip: {ExampleDeathRecord.InformantAddressZip}");</para>
             </example>
         </member>
         <member name="M:VRDR.DeathRecord.GetPartialDate(Hl7.Fhir.Model.Extension,System.String)">

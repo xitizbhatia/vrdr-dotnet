@@ -144,6 +144,9 @@ namespace VRDR.HTTP
                 case string url when new Regex(@"trx").IsMatch(url): // .trx
                     result = json2trx(bundle);
                     break;
+                case string url when new Regex(@"mre").IsMatch(url): // .mre
+                    result = json2mre(bundle);
+                    break;
             }
 
             return result;
@@ -322,6 +325,32 @@ namespace VRDR.HTTP
         }
 
 
+        private static string json2mre(Bundle messageBundle)
+        {
+            string MREString = null;
+
+            try
+            {
+                DemographicsCodingMessage message = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)messageBundle) as DemographicsCodingMessage;
+                DeathRecord record = message.DeathRecord;
+                IJEMortality ije = new IJEMortality(record, false);
+                ije.DOD_YR = message.DeathYear.ToString();
+                ije.DSTATE = message.JurisdictionId;
+                ije.FILENO = message.StateAuxiliaryId.ToString();
+                MREString = ije2mre(ije);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"*** Error parsing message: {e}");
+                // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
+                // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
+                //TBD
+            }
+
+
+            return MREString;
+        }
+
         private static string json2trx(Bundle messageBundle)
         {
             string TRXString = null;
@@ -347,6 +376,19 @@ namespace VRDR.HTTP
 
 
             return TRXString;
+        }
+
+        private static string ije2mre(IJEMortality ije)
+        {
+            string ijeString = ije.ToString();
+            string mreString = string.Empty.PadRight(500);
+            mreString = mreString.Insert(0, ije.DOD_YR);
+            mreString = mreString.Insert(4, ije.DSTATE);
+            mreString = mreString.Insert(6, ije.FILENO);
+            mreString = mreString.Insert(15, ijeString.Substring(246, 324));
+            mreString = mreString.Insert(342, ije.DETHNICE);
+            mreString = mreString.Insert(345, ije.DETHNIC5C);
+            return (mreString);
         }
 
         private static string ije2trx(IJEMortality ije)
