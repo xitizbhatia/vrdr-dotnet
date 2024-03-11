@@ -227,7 +227,7 @@ namespace VRDR.HTTP
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_NO_CODING_NEEDED_DUPLICATE", reference = statusMsg.StatusedMessageId };
                             } else if (String.Equals("manualCauseOfDeathCoding", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL", reference = statusMsg.StatusedMessageId };
-                            } if (String.Equals("manualCodingCanceled_Update", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                            } else if (String.Equals("manualCodingCanceled_Update", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL_CANCELLED_UPDATE", reference = statusMsg.StatusedMessageId };
                             } else {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_LOOKUP_IN_JSON", reference = statusMsg.StatusedMessageId };
