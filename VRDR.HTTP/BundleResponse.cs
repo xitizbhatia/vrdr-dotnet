@@ -19,5 +19,11 @@ namespace VRDR.HTTP
         public string type { get; set; }
         public string reference { get; set; }
     }
+
+    public class DiagnosticIssues
+    {
+        public string stateauxid { get; set; }
+        public string description { get; set; }
+    }
 }
 
