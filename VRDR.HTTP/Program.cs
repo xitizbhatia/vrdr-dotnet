@@ -244,6 +244,21 @@ namespace VRDR.HTTP
                             bundleResponse.messages.Add(response);
                             //ProcessResponseMessage(statusMsg);
                             break;
+                        case "http://nchs.cdc.gov/vrdr_submission":
+                            DeathRecordSubmissionMessage submissionMessage = BaseMessage.Parse<DeathRecordSubmissionMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionMessage.MessageId, type = "VITAL_INTERSTATE_NEW_SUBMISSION", reference = submissionMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_update":
+                            DeathRecordUpdateMessage submissionUpdateMessage = BaseMessage.Parse<DeathRecordUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionUpdateMessage.MessageId, type = "VITAL_INTERSTATE_UPDATE_SUBMISSION", reference = submissionUpdateMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_void":
+                            DeathRecordVoidMessage submissionVoidMessage = BaseMessage.Parse<DeathRecordVoidMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionVoidMessage.MessageId, type = "VITAL_INTERSTATE_VOID_SUBMISSION", reference = submissionVoidMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
+                            break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
                             break;
@@ -314,6 +329,21 @@ namespace VRDR.HTTP
                             //Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status}");
                             if (statusMsg.MessageId.Equals(messageId))
                                 extractedMessageJSON = statusMsg.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission":
+                            DeathRecordSubmissionMessage submissionMessage = BaseMessage.Parse<DeathRecordSubmissionMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionMessage.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_update":
+                            DeathRecordUpdateMessage submissionUpdateMessage = BaseMessage.Parse<DeathRecordUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionUpdateMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionUpdateMessage.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_void":
+                            DeathRecordVoidMessage submissionVoidMessage = BaseMessage.Parse<DeathRecordVoidMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionVoidMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionVoidMessage.ToJSON();
                             break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
