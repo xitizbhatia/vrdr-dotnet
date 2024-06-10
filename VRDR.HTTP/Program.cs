@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -141,8 +142,14 @@ namespace VRDR.HTTP
                 case string url when new Regex(@"extractmessagefrombundle").IsMatch(url): // .extractmessagefrombundle
                     result = extractMessageFromBundle(bundle, request.Headers.GetValues("FHIR-MESSAGE-ID").FirstOrDefault());
                     break;
+                case string url when new Regex(@"extractdiagnosticfrombundle").IsMatch(url): //.extractdiagnosticfrombundle
+                    result = extractDiagnosticIssuesFromBundle(bundle, request.Headers.GetValues("MESSAGE-TYPE").FirstOrDefault());
+                    break;
                 case string url when new Regex(@"trx").IsMatch(url): // .trx
                     result = json2trx(bundle);
+                    break;
+                case string url when new Regex(@"mre").IsMatch(url): // .mre
+                    result = json2mre(bundle);
                     break;
             }
 
@@ -221,17 +228,36 @@ namespace VRDR.HTTP
                             StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
                             Console.WriteLine($"*** Received status message: {statusMsg.MessageId}  for {statusMsg.StatusedMessageId} with status: {statusMsg.Status} .");
                             if (String.Equals("noCodingNeeded_Duplicate", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
-                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_NO_CODING_NEEDED_DUPLICATE", reference = statusMsg.StatusedMessageId };
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_NO_COD_CODING_NEEDED_DUPLICATE", reference = statusMsg.StatusedMessageId };
                             } else if (String.Equals("manualCauseOfDeathCoding", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL", reference = statusMsg.StatusedMessageId };
+                            } else if (String.Equals("manualDemographicCoding", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_DEMOGRAPHIC_CODING_MANUAL", reference = statusMsg.StatusedMessageId };
                             } else if (String.Equals("manualCodingCanceled_Update", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL_CANCELLED_UPDATE", reference = statusMsg.StatusedMessageId };
+                            } else if (String.Equals("manualCodingCanceled_Void", statusMsg.Status, StringComparison.OrdinalIgnoreCase)) {
+                                response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_COD_CODING_MANUAL_CANCELLED_VOID", reference = statusMsg.StatusedMessageId };
                             } else {
                                 response = new Response { messageId = statusMsg.MessageId, type = "STATUS_MESSAGE_LOOKUP_IN_JSON", reference = statusMsg.StatusedMessageId };
                             }
                             
                             bundleResponse.messages.Add(response);
                             //ProcessResponseMessage(statusMsg);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission":
+                            DeathRecordSubmissionMessage submissionMessage = BaseMessage.Parse<DeathRecordSubmissionMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionMessage.MessageId, type = "VITAL_INTERSTATE_NEW_SUBMISSION", reference = submissionMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_update":
+                            DeathRecordUpdateMessage submissionUpdateMessage = BaseMessage.Parse<DeathRecordUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionUpdateMessage.MessageId, type = "VITAL_INTERSTATE_UPDATE_SUBMISSION", reference = submissionUpdateMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_void":
+                            DeathRecordVoidMessage submissionVoidMessage = BaseMessage.Parse<DeathRecordVoidMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            response = new Response { messageId = submissionVoidMessage.MessageId, type = "VITAL_INTERSTATE_VOID_SUBMISSION", reference = submissionVoidMessage.MessageId }; //there is no reference for interstate messages
+                            bundleResponse.messages.Add(response);
                             break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
@@ -304,6 +330,21 @@ namespace VRDR.HTTP
                             if (statusMsg.MessageId.Equals(messageId))
                                 extractedMessageJSON = statusMsg.ToJSON();
                             break;
+                        case "http://nchs.cdc.gov/vrdr_submission":
+                            DeathRecordSubmissionMessage submissionMessage = BaseMessage.Parse<DeathRecordSubmissionMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionMessage.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_update":
+                            DeathRecordUpdateMessage submissionUpdateMessage = BaseMessage.Parse<DeathRecordUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionUpdateMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionUpdateMessage.ToJSON();
+                            break;
+                        case "http://nchs.cdc.gov/vrdr_submission_void":
+                            DeathRecordVoidMessage submissionVoidMessage = BaseMessage.Parse<DeathRecordVoidMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
+                            if (submissionVoidMessage.MessageId.Equals(messageId))
+                                extractedMessageJSON = submissionVoidMessage.ToJSON();
+                            break;
                         default:
                             Console.WriteLine($"*** Unknown message type");
                             break;
@@ -319,6 +360,76 @@ namespace VRDR.HTTP
             }
 
             return extractedMessageJSON;
+        }
+
+        private static string extractDiagnosticIssuesFromBundle(Bundle bundle, string messageType)
+        {
+            DiagnosticIssues issues = null;
+
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                string stateAuxiliaryId = null;
+                switch (messageType)
+                {
+                    case "vrdr_extraction_error":
+                        ExtractionErrorMessage errMsg = BaseMessage.Parse<ExtractionErrorMessage>((Hl7.Fhir.Model.Bundle)bundle);
+                        stateAuxiliaryId = errMsg.StateAuxiliaryId;
+                        foreach (var issue in errMsg.Issues)
+                        {
+                            sb.Append(issue.Description).Append(",");
+
+                        }
+                        break;
+                    case "vrdr_status":
+                        StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)bundle);
+                        stateAuxiliaryId = statusMsg.StateAuxiliaryId;
+                        sb.Append(statusMsg.Status.ToString());
+                        break;
+                    default:
+                        Console.WriteLine($"*** Unknown message type");
+                        break;
+
+                }
+
+                issues = new DiagnosticIssues { stateauxid = stateAuxiliaryId, description = sb.ToString() };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"*** Error parsing diagnostic issues from Error message: {e}");
+                // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
+                // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
+                //TBD
+            }
+
+
+            return JsonSerializer.Serialize<DiagnosticIssues>(issues);
+        }
+
+        private static string json2mre(Bundle messageBundle)
+        {
+            string MREString = null;
+
+            try
+            {
+                DemographicsCodingMessage message = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)messageBundle) as DemographicsCodingMessage;
+                DeathRecord record = message.DeathRecord;
+                IJEMortality ije = new IJEMortality(record, false);
+                ije.DOD_YR = message.DeathYear.ToString();
+                ije.DSTATE = message.JurisdictionId;
+                ije.FILENO = message.StateAuxiliaryId.ToString();
+                MREString = ije2mre(ije);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"*** Error parsing message: {e}");
+                // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
+                // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
+                //TBD
+            }
+
+
+            return MREString;
         }
 
 
@@ -347,6 +458,19 @@ namespace VRDR.HTTP
 
 
             return TRXString;
+        }
+
+        private static string ije2mre(IJEMortality ije)
+        {
+            string ijeString = ije.ToString();
+            string mreString = string.Empty.PadRight(500);
+            mreString = mreString.Insert(0, ije.DOD_YR);
+            mreString = mreString.Insert(4, ije.DSTATE);
+            mreString = mreString.Insert(6, ije.FILENO);
+            mreString = mreString.Insert(15, ijeString.Substring(246, 324));
+            mreString = mreString.Insert(342, ije.DETHNICE);
+            mreString = mreString.Insert(345, ije.DETHNIC5C);
+            return (mreString);
         }
 
         private static string ije2trx(IJEMortality ije)
