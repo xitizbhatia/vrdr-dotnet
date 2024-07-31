@@ -415,9 +415,10 @@ namespace VRDR.HTTP
                 DemographicsCodingMessage message = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)messageBundle) as DemographicsCodingMessage;
                 DeathRecord record = message.DeathRecord;
                 IJEMortality ije = new IJEMortality(record, false);
-                ije.DOD_YR = message.DeathYear.ToString();
-                ije.DSTATE = message.JurisdictionId;
-                ije.FILENO = message.StateAuxiliaryId.ToString();
+                //ije.DOD_YR = message.DeathYear.ToString();
+                //ije.DSTATE = message.JurisdictionId;
+                //ije.FILENO = message.StateAuxiliaryId.ToString();
+                ije.AUXNO = message.StateAuxiliaryId.ToString();
                 MREString = ije2mre(ije);
             }
             catch (Exception e)
@@ -464,9 +465,10 @@ namespace VRDR.HTTP
         {
             string ijeString = ije.ToString();
             string mreString = string.Empty.PadRight(500);
-            mreString = mreString.Insert(0, ije.DOD_YR);
-            mreString = mreString.Insert(4, ije.DSTATE);
-            mreString = mreString.Insert(6, ije.FILENO);
+            //mreString = mreString.Insert(0, ije.DOD_YR);
+            //mreString = mreString.Insert(4, ije.DSTATE);
+            //mreString = mreString.Insert(6, ije.FILENO);
+            mreString = mreString.Insert(0, ije.AUXNO);
             mreString = mreString.Insert(15, ijeString.Substring(246, 324));
             mreString = mreString.Insert(342, ije.DETHNICE);
             mreString = mreString.Insert(345, ije.DETHNIC5C);
