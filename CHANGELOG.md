@@ -1,5 +1,146 @@
 # Changelog
 
+<a name="4.2.2"></a>
+## [4.2.2](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.2.2) (2024-08-06)
+
+### Other
+
+* add test coverage ([#600](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/600)) ([f3f307b](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/f3f307b85b09097739890f7ddfe08fcc4f07d017))
+* bump coverlet.collector from 6.0.0 to 6.0.2 ([#603](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/603)) ([13fa016](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/13fa0160b47c0bce9de286b5ab34959cdaafe0f2))
+* bump ReportGenerator from 5.3.5 to 5.3.8 ([#602](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/602)) ([004842f](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/004842ff3ee4be06226cb2336eca385d196cca4a))
+* ignore patch dependency updates ([#605](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/605)) ([332a13c](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/332a13c9d13087f0e83f50416aefc830fc4539dc))
+
+<a name="4.2.1"></a>
+## [4.2.1](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.2.1) (2024-08-02)
+
+### Bug Fixes
+
+*  remove auto-generation of certificate identifier ([#598](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/598)) ([d55d74d](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/d55d74d62632cf512b32a48987c5edb4cbfc94b9))
+
+<a name="4.2.0"></a>
+## [4.2.0](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.2.0) (2024-07-19)
+
+### Features
+
+* remove padding by 0 to AUXNO2 and AUXNO ([#591](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/591)) ([dce0842](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/dce08422a121b8bb0df053dc519036b0e88f1734))
+
+### Bug Fixes
+
+* exclude display text for selected code ([#596](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/596)) ([e38ba84](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/e38ba84d95f1fb4ada90e5422ff82fca0a91346a))
+
+### Other
+
+* bump Microsoft.NET.Test.Sdk from 17.9.0 to 17.10.0 ([#585](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/585)) ([24f6ecd](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/24f6ecd22da54973e3d9acb61c41589e775486a4))
+* bump xunit from 2.8.0 to 2.8.1 ([#587](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/587)) ([957230c](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/957230cee6f8728f541e8acbf2a6e5391fe23811))
+* bump xunit from 2.8.1 to 2.9.0 ([#594](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/594)) ([2f83f4b](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/2f83f4b962b84723aa8fb8c3639f027f0c98a3c8))
+* bump xunit.runner.visualstudio from 2.8.0 to 2.8.2 ([#593](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/593)) ([d750880](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/d7508808b1861e75e631ccb684014e466cfbf7e6))
+
+<a name="4.1.14"></a>
+## [4.1.14](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.14) (2024-05-30)
+
+### Bug Fixes
+
+* add support for literal "UNKNOWN" LNAME for IJE ([#588](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/588)) ([4921660](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/4921660c13c529dc9b13664c1ac15459211d7562))
+
+<a name="4.1.13"></a>
+## [4.1.13](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.13) (2024-05-20)
+
+### Bug Fixes
+
+* updating state text parsing lookup ([#582](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/582)) ([2fc0f8a](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/2fc0f8ac0bb10acbf380d1b32151fd9e3c544150))
+
+<a name="4.1.12"></a>
+## [4.1.12](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.12) (2024-05-14)
+
+### Bug Fixes
+
+* handle translation from FHIR to IJE for COUNTRYC and STATE fields ([#579](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/579)) ([bc37e8b](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/bc37e8b20cdd9a1497cf918c9215efbfce567a89))
+
+### Other
+
+* bump action versions ([#576](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/576)) ([4ff2b7a](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/4ff2b7a70cd274fed559b73b719e4a1448061f59))
+* use specific alirezanet/publish-nuget action version ([#578](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/578)) ([d1089ec](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/d1089ecc7ed3f99c9aafb65e7c7c4e1bf45db28b))
+
+<a name="4.1.11"></a>
+## [4.1.11](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.11) (2024-05-03)
+
+### Bug Fixes
+
+* use leap year as default for datetime helper ([#575](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/575)) ([31babf9](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/31babf9087d1272797a474a08821d84361083d93))
+
+### Other
+
+* bump xunit from 2.7.0 to 2.8.0 ([#570](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/570)) ([ebd03c2](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/ebd03c26126f5efdb7cb38617a18f7d81ae33d18))
+* bump xunit.runner.visualstudio from 2.5.7 to 2.8.0 ([#571](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/571)) ([338d472](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/338d4725fe4628157c9ad8a80b9171a30cfe8d38))
+
+<a name="4.1.10"></a>
+## [4.1.10](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.10) (2024-04-19)
+
+### Bug Fixes
+
+* handle invalid birth country and state during IJE conversion ([#565](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/565)) ([c4d6964](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/c4d69641dbfe879bda4ca57df250ccd4ffca5a7c))
+
+<a name="4.1.9"></a>
+## [4.1.9](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.9) (2024-03-19)
+
+### Bug Fixes
+
+* add System.Net.Http namespace reference ([#549](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/549)) ([69b309f](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/69b309f8568efc6452f29acda13ba94b5c486bb1))
+* reference URLs for PlaceOfInjury and ManualUnderlyingCauseOfDeath ([#562](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/562)) ([059b4ef](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/059b4ef1de90a7cf7ebffc9c83b945ca823953af))
+
+### Other
+
+* bump Microsoft.NET.Test.Sdk from 17.8.0 to 17.9.0 ([#557](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/557)) ([cde1231](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/cde1231a0ad6b7166482c542ba4c87ff7b63d566))
+* bump xunit from 2.6.1 to 2.6.3 ([#548](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/548)) ([7770173](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/7770173d8ad0ea398a5ef31bc5cae414ae805aac))
+* bump xunit from 2.6.3 to 2.7.0 ([#560](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/560)) ([5a81f87](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/5a81f87af1b09d3950c430e316309669b39286cc))
+* bump xunit.runner.visualstudio from 2.5.3 to 2.5.5 ([#547](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/547)) ([cad0dfa](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/cad0dfad3e95cdceac6397b59e135d27c3f50b0c))
+* bump xunit.runner.visualstudio from 2.5.5 to 2.5.7 ([#559](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/559)) ([b684be9](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/b684be9c55fc6b4f04ad57ec2991f45a99fb3616))
+
+<a name="4.1.8"></a>
+## [4.1.8](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.8) (2023-11-14)
+
+### Other
+
+* bump Microsoft.NET.Test.Sdk from 17.7.2 to 17.8.0 ([#538](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/538)) ([fef3b75](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/fef3b75bf026cecbfde2cd32398523a2ec0d9291))
+* bump xunit from 2.5.3 to 2.6.1 ([#537](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/537)) ([eab811c](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/eab811c36fe641d4b3918e45bd2f623893d8b843))
+* update 4th test case ([#540](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/540)) ([11c6700](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/11c6700f3599f3aca15e46707b07e1548c8430b1))
+
+<a name="4.1.7"></a>
+## [4.1.7](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.7) (2023-10-24)
+
+### Bug Fixes
+
+* default decedent gender to unknown (#529) ([172d2b5](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/172d2b5017c40c7443d8b29c4570bbcb3f934275))
+
+### Other
+
+* bump xunit from 2.5.0 to 2.5.1 (#520) ([f1cc224](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/f1cc224eb0009d232584f666e45db9bbb88f863b))
+* bump xunit from 2.5.1 to 2.5.2 (#527) ([7766300](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/7766300ef2a372af00ab05d97e7ba17d7d8293a4))
+* bump xunit from 2.5.2 to 2.5.3 (#530) ([dc803a8](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/dc803a8c13b1e4e7d09b24990cabcfb9dfd4afd4))
+* bump xunit.runner.visualstudio from 2.5.1 to 2.5.3 (#528) ([bd2e686](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/bd2e686f9be78d6f5731d9f2087e7e69c626e9a9))
+* use net6 container; add VS Code debug profiles (#531) ([6970a7b](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/6970a7b1168e32140908b800ba9415d2d5017306))
+
+<a name="4.1.6"></a>
+## [4.1.6](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.6) (2023-10-10)
+
+### Bug Fixes
+
+* adding missing place of injury and description (#524) ([6c90377](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/6c90377cc7a942211dda20079e53321c51e29c97))
+
+### Other
+
+* bump xunit.runner.visualstudio from 2.5.0 to 2.5.1 (#521) ([4fdcba3](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/4fdcba3ef067cd35098e4547e528fecf599cf293))
+
+<a name="4.1.5"></a>
+## [4.1.5](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.5) (2023-9-5)
+
+### Other
+
+* add 4th test record (#518) ([f852332](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/f85233212e800cb6fd32cfb58f9a00b9f0aadf38))
+* add support to manually dispatch workflows (#514) ([24585f2](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/24585f20f0c1a488b03eb93bdb4084c5f215f7c5))
+* bump Microsoft.NET.Test.Sdk from 17.7.0 to 17.7.1 (#516) ([c00135b](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/c00135bb8a6b412a3c62ce1c681d019ac325e3ca))
+* bump Microsoft.NET.Test.Sdk from 17.7.1 to 17.7.2 (#519) ([7930ab4](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/7930ab4a16eb48cc977dd1f83f092d07d1f5a720))
+
 <a name="4.1.4"></a>
 ## [4.1.4](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.1.4) (2023-8-14)
 
@@ -155,7 +296,7 @@
 
 ## v4.0.0.preview21 - 2023-04-20
 
-* Adds support for multiple message destinations. It implemented this with a comma separated string of endpoints in the MessageDestination attribute. 
+* Adds support for multiple message destinations. It implemented this with a comma separated string of endpoints in the MessageDestination attribute.
 
 *## v4.0.0.preview20 - 2023-04-20
 
@@ -199,7 +340,7 @@
 * Added a tabular data to FHIR Death Record Converter for testing
 * Improved errors returned for DSTATE missing vs incorrect
 * Fixed Auxno and Auxno2 formatting during conversion
-* Fixed IJEMortality handling of NCHS-formatted ICD10 codes 
+* Fixed IJEMortality handling of NCHS-formatted ICD10 codes
 * Return null instead of empty strings for a blank fields in the death record
 
 ## v4.0.0-preview15 - 2022-12-06
