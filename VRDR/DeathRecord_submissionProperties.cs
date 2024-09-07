@@ -4942,6 +4942,10 @@ namespace VRDR
                     value += ":";
                     value = value.PadRight(8, '0');
                 }
+                if (value == "99:99:00")
+                {
+                    value = "00:00:00";
+                }
                 Observation.ComponentComponent pronouncementDateObs = GetOrCreateDateOfDeathPronouncementObs();
                 // if we are only storing time, set just the valueTime
                 if (pronouncementDateObs != null && (pronouncementDateObs.Value == null || pronouncementDateObs.Value is Time))
