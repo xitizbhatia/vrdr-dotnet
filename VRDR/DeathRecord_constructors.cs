@@ -39,6 +39,7 @@ namespace VRDR
             // Start with an empty decedent.  Need reference in Composition.
             Decedent = new Patient();
             Decedent.Id = Guid.NewGuid().ToString();
+            Decedent.Gender = AdministrativeGender.Unknown;
             Decedent.Meta = new Meta();
             string[] decedent_profile = { ProfileURL.Decedent };
             Decedent.Meta.Profile = decedent_profile;
@@ -66,7 +67,7 @@ namespace VRDR
             Composition.Attester.First().Party = new ResourceReference("urn:uuid:" + Certifier.Id);
             Composition.Attester.First().ModeElement = new Code<Hl7.Fhir.Model.Composition.CompositionAttestationMode>(Hl7.Fhir.Model.Composition.CompositionAttestationMode.Legal);
             Hl7.Fhir.Model.Composition.EventComponent eventComponent = new Hl7.Fhir.Model.Composition.EventComponent();
-            eventComponent.Code.Add(new CodeableConcept(CodeSystems.SCT, "103693007", "Diagnostic procedure (procedure)", null));
+            eventComponent.Code.Add(new CodeableConcept(CodeSystems.SCT, "103693007", null, null));
             eventComponent.Detail.Add(new ResourceReference("urn:uuid:" + DeathCertification.Id));
             Composition.Event.Add(eventComponent);
             Bundle.AddResourceEntry(Composition, "urn:uuid:" + Composition.Id);
@@ -143,6 +144,10 @@ namespace VRDR
                         FhirJsonParser parser = new FhirJsonParser(parserSettings);
                         Bundle = parser.Parse<Bundle>(record);
                     }
+
+                    // Validate the partial dates.
+                    DeathRecord.ValidatePartialDates(Bundle);
+
                     Navigator = Bundle.ToTypedElement();
                 }
                 catch (Exception e)
@@ -663,10 +668,7 @@ namespace VRDR
                     }
                 }
             }
-            if (fullRecord)
-            {
-                UpdateDeathRecordIdentifier();
-            }
+            
         }
     }
 }

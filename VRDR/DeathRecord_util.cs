@@ -32,19 +32,40 @@ namespace VRDR
         private int? GetPartialDate(Extension partialDateTime, string partURL)
         {
             Extension part = partialDateTime?.Extension?.Find(ext => ext.Url == partURL);
+            Extension dataAbsent = part?.Extension?.Find(ext => ext.Url == OtherExtensionURL.DataAbsentReason);
+            // extension for absent date can be directly on the part as with year, month, day
+            if (dataAbsent != null)
+            {
+                // The data absent reason is either a placeholder that a field hasen't been set yet (data absent reason of 'temp-unknown') or
+                // a claim that there's no data (any other data absent reason, e.g., 'unknown'); return null for the former and "-1" for the latter
+                string code = ((Code)dataAbsent.Value).Value;
+                if (code == "temp-unknown")
+                {
+                    return null;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+            // check if the part (e.g. "_valueUnsignedInt") has a data absent reason extension on the value
+            Extension dataAbsentOnValue = part?.Value?.Extension?.Find(ext => ext.Url == OtherExtensionURL.DataAbsentReason);
+            if (dataAbsentOnValue != null)
+            {
+                string code = ((Code)dataAbsentOnValue.Value).Value;
+                if (code == "temp-unknown")
+                {
+                    return null;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
             // If we have a value, return it
             if (part?.Value != null)
             {
                 return (int?)((UnsignedInt)part.Value).Value; // Untangle a FHIR UnsignedInt in an extension into an int
-            }
-            // If there's no value, but there is a data absent reason, return the appropriate status
-            Extension dataAbsent = part?.Extension?.Find(ext => ext.Url == OtherExtensionURL.DataAbsentReason);
-            if (dataAbsent != null)
-            {
-                // The data absent reason is either a placeholder that a field hasen't been set yet (data absent reason of 'temp-unknown') or
-                // a claim that there's no data (any other data absent reason, e.g., 'unknown'); return null for the former and -1 for the latter
-                string code = ((Code)dataAbsent.Value).Value;
-                if (code == "temp-unknown") return null; else return -1;
             }
             // No data present at all, return null
             return null;
@@ -87,9 +108,9 @@ namespace VRDR
             }
             else
             {
-                part.Value = null;
+                part.Value = new UnsignedInt();
                 // Determine which data absent reason to use based on whether the value is unknown or -1
-                part.Extension.Add(new Extension(OtherExtensionURL.DataAbsentReason, new Code(value == -1 ? "unknown" : "temp-unknown")));
+                part.Value.Extension.Add(new Extension(OtherExtensionURL.DataAbsentReason, new Code(value == -1 ? "unknown" : "temp-unknown")));
             }
         }
 
@@ -97,18 +118,40 @@ namespace VRDR
         private string GetPartialTime(Extension partialDateTime)
         {
             Extension part = partialDateTime?.Extension?.Find(ext => ext.Url == ExtensionURL.DateTime);
-            // If we have a value, return it
-            if (part?.Value != null)
-            {
-                return part.Value.ToString();
-            }
             Extension dataAbsent = part?.Extension?.Find(ext => ext.Url == OtherExtensionURL.DataAbsentReason);
+            // extension for absent date can be directly on the part as with year, month, day
             if (dataAbsent != null)
             {
                 // The data absent reason is either a placeholder that a field hasen't been set yet (data absent reason of 'temp-unknown') or
                 // a claim that there's no data (any other data absent reason, e.g., 'unknown'); return null for the former and "-1" for the latter
                 string code = ((Code)dataAbsent.Value).Value;
-                if (code == "temp-unknown") return null; else return "-1";
+                if (code == "temp-unknown")
+                {
+                    return null;
+                }
+                else
+                {
+                    return "-1";
+                }
+            }
+            // check if the part (e.g. "_valueTime") has a data absent reason extension on the value
+            Extension dataAbsentOnValue = part?.Value?.Extension?.Find(ext => ext.Url == OtherExtensionURL.DataAbsentReason);
+            if (dataAbsentOnValue != null)
+            {
+                string code = ((Code)dataAbsentOnValue.Value).Value;
+                if (code == "temp-unknown")
+                {
+                    return null;
+                }
+                else
+                {
+                    return "-1";
+                }
+            }
+            // If we have a value, return it
+            if (part?.Value != null)
+            {
+                return part.Value.ToString();
             }
             // No data present at all, return null
             return null;
@@ -131,15 +174,16 @@ namespace VRDR
             }
             else
             {
-                part.Value = null;
+                part.Value = new Time();
                 // Determine which data absent reason to use based on whether the value is unknown or -1
-                part.Extension.Add(new Extension(OtherExtensionURL.DataAbsentReason, new Code(value == "-1" ? "unknown" : "temp-unknown")));
+                part.Value.Extension.Add(new Extension(OtherExtensionURL.DataAbsentReason, new Code(value == "-1" ? "unknown" : "temp-unknown")));
             }
         }
 
-        /// <summary>Getter helper for anything that can have a regular FHIR date/time or a PartialDateTime extension, allowing a particular date
-        /// field (year, month, or day) to be read from either the value or the extension</summary>
-        private int? GetDateFragmentOrPartialDate(Element value, string partURL)
+        /// <summary>Getter helper for anything that can have a regular FHIR date/time
+        /// field (year, month, or day) to be read the value
+        /// supports dates and date times but does NOT support extensions</summary>
+        private int? GetDateFragment(Element value, string partURL)
         {
             if (value == null)
             {
@@ -154,7 +198,8 @@ namespace VRDR
             }
             else if (value is Date && ((Date)value).Value != null)
             {
-                dateTimeOffset = ((Date)value).ToDateTimeOffset();
+                // Note: We can't just call ToDateTimeOffset() on the Date because want the date in whatever local time zone was provided
+                dateTimeOffset = DateTimeOffset.Parse(((Date)value).Value);
             }
             if (dateTimeOffset != null)
             {
@@ -167,8 +212,23 @@ namespace VRDR
                     case ExtensionURL.DateDay:
                         return ((DateTimeOffset)dateTimeOffset).Day;
                     default:
-                        throw new ArgumentException("GetDateFragmentOrPartialDate called with unsupported PartialDateTime segment");
+                        throw new ArgumentException("GetDateFragment called with unsupported PartialDateTime segment");
                 }
+            }
+            return null;
+        }
+
+        /// <summary>Getter helper for anything that can have a regular FHIR date/time or a PartialDateTime extension, allowing a particular date
+        /// field (year, month, or day) to be read from either the value or the extension</summary>
+        private int? GetDateFragmentOrPartialDate(Element value, string partURL)
+        {
+            if (value == null) {
+                return null;
+            }
+            var dateFragment = GetDateFragment(value, partURL);
+            if (dateFragment != null)
+            {
+                return dateFragment;
             }
             // Look for either PartialDate or PartialDateTime
             Extension extension = value.Extension.Find(ext => ext.Url == ExtensionURL.PartialDateTime);
@@ -179,11 +239,25 @@ namespace VRDR
             return GetPartialDate(extension, partURL);
         }
 
-        /// <summary>Getter helper for anything that can have a regular FHIR date/time or a PartialDateTime extension, allowing the time to be read
-        /// from either the value or the extension</summary>
-        private string GetTimeFragmentOrPartialTime(Element value)
-        {
-            // If we have a basic value as a valueDateTime use that, otherwise pull from the PartialDateTime extension
+        private FhirDateTime ConvertFhirTimeToFhirDateTime(Time value) {
+            return new FhirDateTime(DateTimeOffset.MinValue.Year, DateTimeOffset.MinValue.Month, DateTimeOffset.MinValue.Day,
+                FhirTimeHour(value), FhirTimeMin(value), FhirTimeSec(value), TimeSpan.Zero);
+        }
+
+        private int FhirTimeHour(Time value) {
+            return int.Parse(value.ToString().Substring(0, 2));
+        }
+
+        private int FhirTimeMin(Time value) {
+            return int.Parse(value.ToString().Substring(3, 2));
+        }
+
+        private int FhirTimeSec(Time value) {
+            return int.Parse(value.ToString().Substring(6, 2));
+        }
+
+        /// <summary>Getter helper for anything that can have a regular FHIR date/time, allowing the time to be read from the value</summary>
+        private string GetTimeFragment(Element value) {
             if (value is FhirDateTime && ((FhirDateTime)value).Value != null)
             {
                 // Using FhirDateTime's ToDateTimeOffset doesn't keep the time in the original time zone, so we parse the string representation, first using the appropriate segment of
@@ -196,12 +270,21 @@ namespace VRDR
                     TimeSpan timeSpan = new TimeSpan(0, dateTime.Hour, dateTime.Minute, dateTime.Second);
                     return timeSpan.ToString(@"hh\:mm\:ss");
                 }
-                return null;
+            }
+            return null;
+        }
+
+        /// <summary>Getter helper for anything that can have a regular FHIR date/time or a PartialDateTime extension, allowing the time to be read
+        /// from either the value or the extension</summary>
+        private string GetTimeFragmentOrPartialTime(Element value)
+        {
+            // If we have a basic value as a valueDateTime use that, otherwise pull from the PartialDateTime extension
+            string time = GetTimeFragment(value);
+            if (time != null) {
+                return time;
             }
             return GetPartialTime(value.Extension.Find(ext => ext.Url == ExtensionURL.PartialDateTime));
         }
-
-
 
         /// <summary>Helper function to set a codeable value based on a code and the set of allowed codes.</summary>
         // <param name="field">the field name to set.</param>
@@ -1017,6 +1100,56 @@ namespace VRDR
                 name.Use = HumanName.NameUse.Official;
                 name.Given = value;
                 names.Add(name);
+            }
+        }
+
+        /// <summary>Helper method to validate that all PartialDate and PartialDateTime exensions are valid and have the valid required sub-extensions.</summary>
+        /// <param name="bundle">The bundle in which to validate the PartialDate/Time extensions.</param>
+        private static void ValidatePartialDates(Bundle bundle)
+        {
+            System.Text.StringBuilder errors = new System.Text.StringBuilder();
+            List<Resource> resources = bundle.Entry.Select(entry => entry.Resource).ToList();
+
+            foreach (Hl7.Fhir.Model.Resource resource in resources)
+            {
+                foreach (DataType child in resource.Children.Where(child => child.GetType().IsSubclassOf(typeof(DataType))))
+                {
+                    // Extract PartialDates and PartialDateTimes.
+                    List<Extension> partialDateExtensions = child.Extension.Where(ext => ext.Url.Equals(ExtensionURL.PartialDate) || ext.Url.Equals(ExtensionURL.PartialDateTime)).ToList();
+                    foreach (Extension partialDateExtension in partialDateExtensions)
+                    {
+                        // Validate that the required sub-extensions are in the PartialDate/Time component.
+                        List<String> partialDateSubExtensions = partialDateExtension.Extension.Select(ext => ext.Url).ToList();
+                        if (!partialDateSubExtensions.Contains(ExtensionURL.DateDay))
+                        {
+                            errors.Append("Missing 'Date-Day' of [" + partialDateExtension.Url + "] for resource [" + resource.Id + "].").AppendLine();
+                        }
+                        if (!partialDateSubExtensions.Contains(ExtensionURL.DateMonth))
+                        {
+                            errors.Append("Missing 'Date-Month' of [" + partialDateExtension.Url + "] for resource [" + resource.Id + "].").AppendLine();
+                        }
+                        if (!partialDateSubExtensions.Contains(ExtensionURL.DateYear))
+                        {
+                            errors.Append("Missing 'Date-Year' of [" + partialDateExtension.Url + "] for resource [" + resource.Id + "].").AppendLine();
+                        }
+                        if (partialDateExtension.Url.Equals(ExtensionURL.PartialDateTime) && !partialDateSubExtensions.Contains(ExtensionURL.DateTime))
+                        {
+                            errors.Append("Missing 'Date-Time' of [" + partialDateExtension.Url + "] for resource [" + resource.Id + "].").AppendLine();
+                        }
+                        // Validate that there are no extraneous invalid sub-extensions of the PartialDate/Time component.
+                        partialDateSubExtensions.Remove(ExtensionURL.DateDay);
+                        partialDateSubExtensions.Remove(ExtensionURL.DateMonth);
+                        partialDateSubExtensions.Remove(ExtensionURL.DateYear);
+                        partialDateSubExtensions.Remove(ExtensionURL.DateTime);
+                        if (partialDateSubExtensions.Count() > 0) {
+                            errors.Append("[" + partialDateExtension.Url + "] component contains extra invalid fields [" + string.Join(", ", partialDateSubExtensions) + "] for resource [" + resource.Id + "].").AppendLine();
+                        }
+                    }
+                }
+            }
+            if (errors.Length > 0)
+            {
+                throw new ArgumentException(errors.ToString());
             }
         }
     }

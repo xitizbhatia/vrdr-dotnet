@@ -143,7 +143,7 @@ namespace VRDR.HTTP
                     result = extractMessageFromBundle(bundle, request.Headers.GetValues("FHIR-MESSAGE-ID").FirstOrDefault());
                     break;
                 case string url when new Regex(@"extractdiagnosticfrombundle").IsMatch(url): //.extractdiagnosticfrombundle
-                    result = extractDiagnosticIssuesFromBundle(bundle,request.Headers.GetValues("MESSAGE-TYPE").FirstOrDefault());
+                    result = extractDiagnosticIssuesFromBundle(bundle, request.Headers.GetValues("MESSAGE-TYPE").FirstOrDefault());
                     break;
                 case string url when new Regex(@"trx").IsMatch(url): // .trx
                     result = json2trx(bundle);
@@ -365,43 +365,43 @@ namespace VRDR.HTTP
         private static string extractDiagnosticIssuesFromBundle(Bundle bundle, string messageType)
         {
             DiagnosticIssues issues = null;
-            
-                try
-                {
-                    StringBuilder sb = new StringBuilder();
-                    string stateAuxiliaryId = null;
-                    switch (messageType)
-                    {
-                        case "vrdr_extraction_error":
-                            ExtractionErrorMessage errMsg = BaseMessage.Parse<ExtractionErrorMessage>((Hl7.Fhir.Model.Bundle)bundle);
-                            stateAuxiliaryId = errMsg.StateAuxiliaryId;
-                            foreach (var issue in errMsg.Issues)
-                            {
-                                sb.Append(issue.Description).Append(",");
 
-                            }
-                            break;
-                        case "vrdr_status":
-                            StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)bundle);
-                            stateAuxiliaryId = statusMsg.StateAuxiliaryId;
-                            sb.Append(statusMsg.Status.ToString());
-                            break;
-                        default:
-                            Console.WriteLine($"*** Unknown message type");
-                            break;
-
-                    }
-                    
-                    issues = new DiagnosticIssues { stateauxid = stateAuxiliaryId, description = sb.ToString() };
-                }
-                catch (Exception e)
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                string stateAuxiliaryId = null;
+                switch (messageType)
                 {
-                    Console.WriteLine($"*** Error parsing diagnostic issues from Error message: {e}");
-                    // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
-                    // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
-                    //TBD
+                    case "vrdr_extraction_error":
+                        ExtractionErrorMessage errMsg = BaseMessage.Parse<ExtractionErrorMessage>((Hl7.Fhir.Model.Bundle)bundle);
+                        stateAuxiliaryId = errMsg.StateAuxiliaryId;
+                        foreach (var issue in errMsg.Issues)
+                        {
+                            sb.Append(issue.Description).Append(",");
+
+                        }
+                        break;
+                    case "vrdr_status":
+                        StatusMessage statusMsg = BaseMessage.Parse<StatusMessage>((Hl7.Fhir.Model.Bundle)bundle);
+                        stateAuxiliaryId = statusMsg.StateAuxiliaryId;
+                        sb.Append(statusMsg.Status.ToString());
+                        break;
+                    default:
+                        Console.WriteLine($"*** Unknown message type");
+                        break;
+
                 }
-            
+
+                issues = new DiagnosticIssues { stateauxid = stateAuxiliaryId, description = sb.ToString() };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"*** Error parsing diagnostic issues from Error message: {e}");
+                // Extraction errors require acks so we insert them in the DB to send with other messages to NCHS
+                // Wrap this in another try catch so we can see any failures to create the extraction error in our logs
+                //TBD
+            }
+
 
             return JsonSerializer.Serialize<DiagnosticIssues>(issues);
         }
@@ -415,9 +415,10 @@ namespace VRDR.HTTP
                 DemographicsCodingMessage message = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)messageBundle) as DemographicsCodingMessage;
                 DeathRecord record = message.DeathRecord;
                 IJEMortality ije = new IJEMortality(record, false);
-                ije.DOD_YR = message.DeathYear.ToString();
-                ije.DSTATE = message.JurisdictionId;
-                ije.FILENO = message.StateAuxiliaryId.ToString();
+                //ije.DOD_YR = message.DeathYear.ToString();
+                //ije.DSTATE = message.JurisdictionId;
+                //ije.FILENO = message.StateAuxiliaryId.ToString();
+                ije.AUXNO = message.StateAuxiliaryId.ToString();
                 MREString = ije2mre(ije);
             }
             catch (Exception e)
@@ -431,6 +432,7 @@ namespace VRDR.HTTP
 
             return MREString;
         }
+
 
         private static string json2trx(Bundle messageBundle)
         {
@@ -463,9 +465,10 @@ namespace VRDR.HTTP
         {
             string ijeString = ije.ToString();
             string mreString = string.Empty.PadRight(500);
-            mreString = mreString.Insert(0, ije.DOD_YR);
-            mreString = mreString.Insert(4, ije.DSTATE);
-            mreString = mreString.Insert(6, ije.FILENO);
+            //mreString = mreString.Insert(0, ije.DOD_YR);
+            //mreString = mreString.Insert(4, ije.DSTATE);
+            //mreString = mreString.Insert(6, ije.FILENO);
+            mreString = mreString.Insert(0, ije.AUXNO);
             mreString = mreString.Insert(15, ijeString.Substring(246, 324));
             mreString = mreString.Insert(342, ije.DETHNICE);
             mreString = mreString.Insert(345, ije.DETHNIC5C);

@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ICSharpCode.SharpZipLib;
 
 namespace VRDR
 {
@@ -29,6 +30,7 @@ namespace VRDR
 
         /// <summary>Priority - lower will be "GET" and "SET" earlier.</summary>
         public int Priority;
+
 
         /// <summary>Constructor.</summary>
         public IJEField(int field, int location, int length, string contents, string name, int priority)
@@ -55,6 +57,13 @@ namespace VRDR
 
         /// <summary>Utility location to provide support for setting MRE-only fields that have no mapping in IJE when creating coding response records</summary>
         public MREHelper mre;
+
+        /// <summary>Field _void.</summary>
+        private string _void;
+
+        /// <summary>Field _alias.</summary>
+        private string _alias;
+
 
         /// <summary>Helper class to contain properties for setting TRX-only fields that have no mapping in IJE when creating coding response records</summary>
         public class TRXHelper
@@ -381,7 +390,7 @@ namespace VRDR
             }
             else
             {
-                date = new DateTimeOffset(1, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+                date = new DateTimeOffset(4, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
                 typeof(DeathRecord).GetProperty(fhirFieldName).SetValue(this.record, DateTimeStringHelper(info, value, dateTimeType, date, dateOnly, withTimezoneOffset));
             }
         }
@@ -606,8 +615,131 @@ namespace VRDR
                 {
                     current = Truncate(current, info.Length).PadLeft(info.Length, '0');
                 }
-            }
+                else if (ijeFieldName == "COUNTRYC" || ijeFieldName == "STATEC")
+                {
+                    var countryCode = dictionary["addressCountry"];
+                    var stateCode = dictionary["addressState"];
 
+                    var nextCountryValue = "ZZ";
+                    var nextStateValue = "ZZ";
+
+                    for (int i = 0; i < ValueSets.ResidenceCountry.Codes.GetLength(0); i += 1)
+                    {
+                        if (ValueSets.ResidenceCountry.Codes[i, 0] == countryCode)
+                        {
+                            nextCountryValue = countryCode;
+                            break;
+                        }
+                    }
+
+                    if (countryCode == "US")
+                    {
+                        for (int i = 0; i < ValueSets.USStatesAndTerritories.Codes.GetLength(0); i += 1)
+                        {
+                            if (ValueSets.USStatesAndTerritories.Codes[i, 0] == stateCode && stateCode != "UNK")
+                            {
+                                nextStateValue = stateCode;
+                                break;
+                            }
+                        }
+                    }
+                    else if (countryCode == "CA")
+                    {
+                        nextStateValue = "XX";
+
+                        for (int i = 0; i < ValueSets.CanadaProvinces.Codes.GetLength(0); i += 1)
+                        {
+                            if (ValueSets.CanadaProvinces.Codes[i, 0] == stateCode && stateCode != "UNK")
+                            {
+                                nextStateValue = stateCode;
+                                break;
+                            }
+                        }
+                    }
+                    else if (nextCountryValue != "ZZ")
+                    {
+                        // other valid country code
+                        nextStateValue = "XX";
+                    }
+                    else
+                    {
+                        // other valid state code
+                        nextStateValue = "ZZ";
+                    }
+
+
+                    if (ijeFieldName == "COUNTRYC")
+                    {
+                        return nextCountryValue;
+                    }
+                    else if (ijeFieldName == "STATEC")
+                    {
+                        return nextStateValue;
+                    }
+                }
+                else if (ijeFieldName == "BPLACE_CNT" || ijeFieldName == "BPLACE_ST")
+                {
+                    var countryCode = dictionary["addressCountry"];
+                    var stateCode = dictionary["addressState"];
+
+                    var nextCountryValue = "ZZ";
+                    var nextStateValue = "ZZ";
+
+                    for (int i = 0; i < ValueSets.BirthplaceCountry.Codes.GetLength(0); i += 1)
+                    {
+                        if (ValueSets.BirthplaceCountry.Codes[i, 0] == countryCode)
+                        {
+                            nextCountryValue = countryCode;
+                            break;
+                        }
+                    }
+
+                    if (countryCode == "US")
+                    {
+                        for (int i = 0; i < ValueSets.USStatesAndTerritories.Codes.GetLength(0); i += 1)
+                        {
+                            if (ValueSets.USStatesAndTerritories.Codes[i, 0] == stateCode && stateCode != "UNK")
+                            {
+                                nextStateValue = stateCode;
+                                break;
+                            }
+                        }
+                    }
+                    else if (countryCode == "CA")
+                    {
+                        nextStateValue = "XX";
+
+                        for (int i = 0; i < ValueSets.CanadaProvinces.Codes.GetLength(0); i += 1)
+                        {
+                            if (ValueSets.CanadaProvinces.Codes[i, 0] == stateCode && stateCode != "UNK")
+                            {
+                                nextStateValue = stateCode;
+                                break;
+                            }
+                        }
+                    }
+                    else if (nextCountryValue != "ZZ")
+                    {
+                        // other valid country code
+                        nextStateValue = "XX";
+                    }
+                    else
+                    {
+                        // other valid state code
+                        nextStateValue = "ZZ";
+                    }
+
+
+                    if (ijeFieldName == "BPLACE_CNT")
+                    {
+                        return nextCountryValue;
+                    }
+                    else if (ijeFieldName == "BPLACE_ST")
+                    {
+                        return nextStateValue;
+                    }
+                }
+            }
             if (geoType == "zip")
             {  // Remove "-" for zip
                 current.Replace("-", string.Empty);
@@ -740,6 +872,26 @@ namespace VRDR
             }
             catch (KeyNotFoundException)
             {
+                switch (ijeField)
+                {
+                    case "COD":
+                        ijeField = "County of Death";
+                        break;
+                    case "COD1A":
+                        ijeField = "Cause of Death-1A";
+                        break;
+                    case "COD1B":
+                        ijeField = "Cause of Death-1B";
+                        break;
+                    case "COD1C":
+                        ijeField = "Cause of Death-1C";
+                        break;
+                    case "COD1D":
+                        ijeField = "Cause of Death-1D";
+                        break;
+                    default:
+                        break;
+                }
                 validationErrors.Add($"Error: Unable to find IJE {ijeField} mapping for FHIR {fhirField} field value '{fhirCode}'");
                 return "";
             }
@@ -912,11 +1064,25 @@ namespace VRDR
         {
             get
             {
-                return "0";
+                if (_void == null)
+                {
+                    return "0";
+                }
+                else
+                {
+                    return _void;
+                }
             }
             set
             {
-                // NOOP
+                if (value.Trim() == "1")
+                {
+                    _void = "1";
+                }
+                else
+                {
+                    _void = "0";
+                }
             }
         }
 
@@ -1014,11 +1180,18 @@ namespace VRDR
         {
             get
             {
-                return LeftJustified_Get("LNAME", "FamilyName");
+                if (!String.IsNullOrWhiteSpace(record.FamilyName))
+                {
+                    return LeftJustified_Get("LNAME", "FamilyName");
+                }
+                else
+                {
+                    return "UNKNOWN";
+                }
             }
             set
             {
-                LeftJustified_Set("LNAME", "FamilyName", value);
+                    LeftJustified_Set("LNAME", "FamilyName", value);
             }
         }
 
@@ -1042,11 +1215,25 @@ namespace VRDR
         {
             get
             {
-                return "0";
+                if (_alias == null)
+                {
+                    return "0";
+                }
+                else
+                {
+                    return _alias;
+                }
             }
             set
             {
-                // NOOP
+                if (value.Trim() == "1")
+                {
+                    _alias = "1";
+                }
+                else
+                {
+                    _alias = "0";
+                }
             }
         }
 
@@ -1510,7 +1697,7 @@ namespace VRDR
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                   TimeAllowingUnknown_Set("TOD", "DeathTime", value);
+                    TimeAllowingUnknown_Set("TOD", "DeathTime", value);
                 }
             }
         }
@@ -1961,13 +2148,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.AmericanIndianOrAlaskanNativeLiteral1);
+                return Get_Race(NvssRace.FirstAmericanIndianOrAlaskanNativeLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.AmericanIndianOrAlaskanNativeLiteral1, value);
+                    Set_Race(NvssRace.FirstAmericanIndianOrAlaskanNativeLiteral, value);
                 }
             }
         }
@@ -1978,13 +2165,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.AmericanIndianOrAlaskanNativeLiteral2);
+                return Get_Race(NvssRace.SecondAmericanIndianOrAlaskanNativeLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.AmericanIndianOrAlaskanNativeLiteral2, value);
+                    Set_Race(NvssRace.SecondAmericanIndianOrAlaskanNativeLiteral, value);
                 }
             }
         }
@@ -1995,13 +2182,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherAsianLiteral1);
+                return Get_Race(NvssRace.FirstOtherAsianLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherAsianLiteral1, value);
+                    Set_Race(NvssRace.FirstOtherAsianLiteral, value);
                 }
             }
         }
@@ -2012,13 +2199,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherAsianLiteral2);
+                return Get_Race(NvssRace.SecondOtherAsianLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherAsianLiteral2, value);
+                    Set_Race(NvssRace.SecondOtherAsianLiteral, value);
                 }
             }
         }
@@ -2029,13 +2216,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherPacificIslandLiteral1);
+                return Get_Race(NvssRace.FirstOtherPacificIslanderLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherPacificIslandLiteral1, value);
+                    Set_Race(NvssRace.FirstOtherPacificIslanderLiteral, value);
                 }
             }
         }
@@ -2046,13 +2233,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherPacificIslandLiteral2);
+                return Get_Race(NvssRace.SecondOtherPacificIslanderLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherPacificIslandLiteral2, value);
+                    Set_Race(NvssRace.SecondOtherPacificIslanderLiteral, value);
                 }
             }
         }
@@ -2063,13 +2250,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherRaceLiteral1);
+                return Get_Race(NvssRace.FirstOtherRaceLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherRaceLiteral1, value);
+                    Set_Race(NvssRace.FirstOtherRaceLiteral, value);
                 }
             }
         }
@@ -2080,13 +2267,13 @@ namespace VRDR
         {
             get
             {
-                return Get_Race(NvssRace.OtherRaceLiteral2);
+                return Get_Race(NvssRace.SecondOtherRaceLiteral);
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    Set_Race(NvssRace.OtherRaceLiteral2, value);
+                    Set_Race(NvssRace.SecondOtherRaceLiteral, value);
                 }
             }
         }
@@ -3942,7 +4129,6 @@ namespace VRDR
                 }
             }
         }
-
         /// <summary>If Transportation Accident, Specify</summary>
         [IJEField(175, 2409, 30, "If Transportation Accident, Specify", "TRANSPRT", 1)]
         public string TRANSPRT
@@ -4741,13 +4927,28 @@ namespace VRDR
         {
             get
             {
-                return DateTime_Get("PPDATESIGNED", "MMddyyyy", "DateOfDeathPronouncement");
+                var month = record.DateOfDeathPronouncementMonth;
+                var day = record.DateOfDeathPronouncementDay;
+                var year = record.DateOfDeathPronouncementYear;
+                if (month == null || day == null || year == null)
+                {
+                    return new String(' ', 8);
+                }
+                else
+                {
+                    return String.Format("{0:00}{1:00}{2:0000}", month, day, year);
+                }
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    DateTime_Set("PPDATESIGNED", "MMddyyyy", "DateOfDeathPronouncement", value, false, true);
+                    var mm = value.Substring(0, 2);
+                    var dd = value.Substring(2, 2);
+                    var yyyy = value.Substring(4, 4);
+                    record.DateOfDeathPronouncementMonth = int.Parse(mm);
+                    record.DateOfDeathPronouncementDay = int.Parse(dd);
+                    record.DateOfDeathPronouncementYear = int.Parse(yyyy);
                 }
             }
         }
@@ -4758,13 +4959,27 @@ namespace VRDR
         {
             get
             {
-                return DateTime_Get("PPTIME", "HHmm", "DateOfDeathPronouncement");
+                var fhirTimeStr = record.DateOfDeathPronouncementTime;
+                if (fhirTimeStr == null)
+                {
+                    return "    ";
+                }
+                else
+                {
+                    var HH = fhirTimeStr.Substring(0, 2);
+                    var mm = fhirTimeStr.Substring(3, 2);
+                    var ijeTime = HH + mm;
+                    return ijeTime;
+                }
             }
             set
             {
                 if (!String.IsNullOrWhiteSpace(value))
                 {
-                    DateTime_Set("PPTIME", "HHmm", "DateOfDeathPronouncement", value, false, true);
+                    var HH = value.Substring(0, 2);
+                    var mm = value.Substring(2, 2);
+                    var fhirTimeStr = HH + ":" + mm + ":00";
+                    record.DateOfDeathPronouncementTime = fhirTimeStr;
                 }
             }
         }
