@@ -141,7 +141,7 @@ namespace VRDR
             ije.INTERVAL1A = "4 Days";
             ije.COD1B = "MRSA Pneumonia";
             ije.INTERVAL1B = "4 Days";
-            ije.PLACE1_1 = "Y";
+            //ije.PLACE1_1 = "Y";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
@@ -233,7 +233,7 @@ namespace VRDR
             ije.COD1D = "Hepatic Encephalopathy";
             ije.INTERVAL1D = "Weeks";
             ije.OTHERCONDITION = "Alcoholism";
-            ije.PLACE8_1 = "00000033";
+            //ije.PLACE8_1 = "00000033";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
@@ -317,7 +317,7 @@ namespace VRDR
             ije.COUNTRYTEXT_R = "United States";
             ije.ADDRESS_R = "2722 N Pin Oak Dr";
             ije.COD1A = "Pending";
-            ije.PLACE20 = "043-A-110234";
+            //ije.PLACE20 = "043-A-110234";
             DeathRecord record = ije.ToDeathRecord();
             return record;
         }
