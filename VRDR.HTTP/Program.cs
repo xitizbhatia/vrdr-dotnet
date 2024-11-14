@@ -94,7 +94,7 @@ namespace VRDR.HTTP
                     {
                         deathRecord.StateLocalIdentifier1 = auxiliaryId;
                     }
-
+                    List<string> destList = null;
                     switch (messageType)
                     {
                         case "SUBMISSION":
@@ -102,17 +102,30 @@ namespace VRDR.HTTP
                             submissionmessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             submissionmessage.StateAuxiliaryId = auxiliaryId;
                             result = submissionmessage.ToJSON(true);
+                            destList = new List<string> { DeathRecordSubmissionMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
+                            submissionmessage.MessageDestinations = destList;
                             break;
                         case "UPDATE":
                             DeathRecordUpdateMessage updatemessage = new DeathRecordUpdateMessage(deathRecord);
                             updatemessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             updatemessage.StateAuxiliaryId = auxiliaryId;
+                            if (String.Equals("updated_notforNCHS", deathRecord.ReplaceStatus.GetValueOrDefault("code"), StringComparison.OrdinalIgnoreCase))
+                            {
+                                destList = new List<string> { "http://steve.naphsis.us/vrdr_exchange" };
+                            }
+                            else
+                            {
+                                destList = new List<string> { DeathRecordUpdateMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
+                            }
+                            updatemessage.MessageDestinations = destList;
                             result = updatemessage.ToJSON(true);
                             break;
                         case "VOID":
                             DeathRecordVoidMessage voidmessage = new DeathRecordVoidMessage(deathRecord);
                             voidmessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             voidmessage.StateAuxiliaryId = auxiliaryId;
+                            destList = new List<string> { DeathRecordVoidMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
+                            voidmessage.MessageDestinations = destList;
                             result = voidmessage.ToJSON(true);
                             break;
                         case "ACKNOWLEDGEMENT":
@@ -120,12 +133,16 @@ namespace VRDR.HTTP
                             AcknowledgementMessage acknowledgementMessage = new AcknowledgementMessage(baseMessage);
                             acknowledgementMessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             acknowledgementMessage.StateAuxiliaryId = auxiliaryId;
+                            destList = new List<string> { AcknowledgementMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
+                            acknowledgementMessage.MessageDestinations = destList;
                             result = acknowledgementMessage.ToJSON(true);
                             break;
                         default:
                             DeathRecordSubmissionMessage messagedefault = new DeathRecordSubmissionMessage(deathRecord);
                             messagedefault.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             messagedefault.StateAuxiliaryId = auxiliaryId;
+                            destList = new List<string> { DeathRecordSubmissionMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
+                            messagedefault.MessageDestinations = destList;
                             result = messagedefault.ToJSON(true);
                             break;
                     }
