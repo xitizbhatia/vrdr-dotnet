@@ -101,9 +101,9 @@ namespace VRDR.HTTP
                             DeathRecordSubmissionMessage submissionmessage = new DeathRecordSubmissionMessage(deathRecord);
                             submissionmessage.MessageSource = "https://dev.vrvweb.com/vrv/fhir";
                             submissionmessage.StateAuxiliaryId = auxiliaryId;
-                            result = submissionmessage.ToJSON(true);
                             destList = new List<string> { DeathRecordSubmissionMessage.MESSAGE_TYPE, "http://steve.naphsis.us/vrdr_exchange" };
                             submissionmessage.MessageDestinations = destList;
+                            result = submissionmessage.ToJSON(true);
                             break;
                         case "UPDATE":
                             DeathRecordUpdateMessage updatemessage = new DeathRecordUpdateMessage(deathRecord);
