@@ -1,5 +1,47 @@
 # Changelog
 
+<a name="4.4.2"></a>
+## [4.4.2](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.4.2) (2024-12-02)
+
+### Bug Fixes
+
+* fixed codes used to parse race missing value reason ([#622](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/622)) ([bcdbfe1](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/bcdbfe142f5bcd6bc305cc9d2e387a073a575439))
+
+<a name="4.4.1"></a>
+## [4.4.1](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.4.1) (2024-10-25)
+
+### Bug Fixes
+
+* check for well formed source before parsing ([#616](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/616)) ([db10c22](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/db10c229d9f0c985b02ef7404f774cb142d7dcbb))
+
+<a name="4.4.0"></a>
+## [4.4.0](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.4.0) (2024-10-22)
+
+### Features
+
+* add scope parameter to Credentials class ([#614](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/614)) ([1a43c21](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/1a43c21cfa71f4fc9c0dfb730775d71aa2f303c1))
+
+<a name="4.3.1"></a>
+## [4.3.1](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.3.1) (2024-09-05)
+
+### Bug Fixes
+
+* default invalid address extensions to empty string in the address dictionary ([#611](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/611)) ([0c08541](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/0c08541f6e9325f2bf772ff71b4525e044e57e83))
+
+<a name="4.3.0"></a>
+## [4.3.0](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.3.0) (2024-08-29)
+
+### Features
+
+* add message header validation ([#607](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/607)) ([0d9a348](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/0d9a34825decf77283f0df7bbf32bd3d361760b2))
+
+<a name="4.2.3"></a>
+## [4.2.3](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.2.3) (2024-08-27)
+
+### Bug Fixes
+
+* add null checks to extension values ([#608](https://www.github.com/nightingaleproject/vrdr-dotnet/issues/608)) ([eb49f15](https://www.github.com/nightingaleproject/vrdr-dotnet/commit/eb49f151211d36063bc31bb8fdcb162d34b5c029))
+
 <a name="4.2.2"></a>
 ## [4.2.2](https://www.github.com/nightingaleproject/vrdr-dotnet/releases/tag/v4.2.2) (2024-08-06)
 

@@ -1079,6 +1079,38 @@ namespace VRDR.Tests
             Assert.Null(responseMsg.StateAuxiliaryId);
         }
 
+        /// <summary>
+        /// Tests the validation of the message header.
+        /// </summary>
+        /// <remarks>
+        /// This test parses a message from a JSON fixture and validates its header.
+        /// It ensures that the message is of type <see cref="DeathRecordSubmissionMessage"/>.
+        /// It also verifies that a <see cref="MessageRuleException"/> is thrown when the message header is invalid,
+        /// and checks that the exception message and source message type are correct.
+        /// </remarks>
+        /// <exception cref="MessageRuleException">
+        /// Thrown when the message header validation fails due to the certificate number being more than 6 digits long.
+        /// </exception>
+        [Fact]
+        public void ValidateMessageHeader()
+        {
+            var msg = BaseMessage.Parse(FixtureStream("fixtures/json/MessageHeaderValidation.json"), false);
+            Assert.IsType<DeathRecordSubmissionMessage>(msg);
+            MessageRuleException ex = Assert.Throws<MessageRuleException>(() => BaseMessage.ValidateMessageHeader(msg));
+            Assert.Equal("Message certificate number cannot be more than 6 digits long.", ex.Message);
+            Assert.IsType<DeathRecordSubmissionMessage>(ex.SourceMessage);
+        }
+
+        [Fact]
+        public void ValidateBadMessage()
+        {
+            FormatException ex = Assert.Throws<FormatException>(() => BaseMessage.Parse(FixtureStream("fixtures/json/BadMessage.json")));
+            Assert.Equal("Invalid leading zero before '2'. LineNumber: 57 | BytePositionInLine: 33.", ex.Message);
+
+            FormatException ex_xml = Assert.Throws<FormatException>(() => BaseMessage.Parse(FixtureStream("fixtures/xml/BadMessage.xml")));
+            Assert.Equal("Invalid Xml encountered. Details: '2002YC000182' is an unexpected token. The expected token is '\"' or '''. Line 21, position 18.", ex_xml.Message);
+        }
+
         [Fact]
         public void ParseOldTRXVersionAsGenericMsg()
         {
@@ -1209,6 +1241,8 @@ namespace VRDR.Tests
             Assert.Null(submission.DeathRecord.UsualOccupation);
             Assert.Null(submission.DeathRecord.UsualIndustry);
         }
+
+
 
 
         private string FixturePath(string filePath)
