@@ -69,6 +69,14 @@ namespace VRDR.Tests
         }
 
         [Fact]
+        public void FailMissingExtensionValue()
+        {
+            string bundle = File.ReadAllText(FixturePath("fixtures/json/MissingExtensionValue.json"));
+            var record = new DeathRecord(bundle);
+            Assert.Equal("", record.DeathLocationAddress["addressStname"]);
+        }
+
+        [Fact]
         public void FailMissingRelatedPersonRelationshipCode()
         {
             string bundle = File.ReadAllText(FixturePath("fixtures/json/MissingRelatedPersonRelationshipCode.json"));
@@ -313,6 +321,14 @@ namespace VRDR.Tests
             Assert.Equal("U", ije1.DETHNIC3);
             Assert.Equal("U", ije1.DETHNIC4);
             Assert.Equal("", ije1.DETHNIC5);
+        }
+
+        [Fact]
+        public void TestRaceMissingValueReason()
+        {
+            DeathRecord d = new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/RaceEthnicityCaseRecord2.json")));
+            IJEMortality ije1 = new IJEMortality(d);
+            Assert.Equal("S", ije1.RACE_MVR);
         }
 
         [Fact]
@@ -3834,6 +3850,14 @@ namespace VRDR.Tests
             // A record with an a literal race field (e.g., FirstAmericanIndianOrAlaskanNativeLiteral) with no content should parse successfully
             DeathRecord dr = new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/EmptyRaceLiteral.json")));
             Assert.DoesNotContain(dr.Race, (t => t.Item1 == "FirstAmericanIndianOrAlaskanNativeLiteral"));
+        }
+
+        [Fact]
+        public void ValidateBadDeathRecord()
+        {
+            // A malformated record JSON record should throw an exception
+            FormatException ex = Assert.Throws<FormatException>(() => new DeathRecord(File.ReadAllText(FixturePath("fixtures/json/BadDeathRecord.json"))));
+            Assert.Equal("Invalid Json encountered. Details: Unexpected character encountered while parsing value: e. Path 'entry[0].resource.extension[0].valueCodeableConcept.coding[0].code', line 45, position 27.", ex.Message);
         }
 
         [Fact]
