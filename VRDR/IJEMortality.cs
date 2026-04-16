@@ -3236,7 +3236,7 @@ namespace VRDR
         {
             get
             {
-                if (DOI_YR != "9999" && DOI_YR != "    ")
+                if (DOI_YR != "9999" && DOI_YR != "    " && TOI_HR != "    " && TOI_HR != "9999")
                 {
                     if (Int32.Parse(record.InjuryTime.Substring(0, 2)) < 12)
                         return "A";
