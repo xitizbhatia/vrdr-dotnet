@@ -3110,7 +3110,7 @@ namespace VRDR
                 }
                 else  // If the return value is not a code, it is just an arbitrary string, so return it.
                 {
-                    return ret;
+                    return ret ?? "";
                 }
             }
             set
