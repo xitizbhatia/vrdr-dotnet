@@ -167,6 +167,11 @@ namespace VRDR.HTTP
                 case string url when new Regex(@"mre").IsMatch(url): // .mre
                     result = json2mre(bundle);
                     break;
+                case string url when new Regex(@"vitalrecordtotext").IsMatch(url): // .vitalrecordtotext - inbound vital record FHIR message bundle -> 5000-char IJE
+                    // NOTE: name deliberately avoids ije/mor/json/xml/nightingale suffixes and the
+                    // fhir/trx/mre substrings so it is not hijacked by an earlier case in this ordered switch.
+                    result = json2vitalije(bundle);
+                    break;
             }
 
             return result;
@@ -262,17 +267,17 @@ namespace VRDR.HTTP
                             break;
                         case "http://nchs.cdc.gov/vrdr_submission":
                             DeathRecordSubmissionMessage submissionMessage = BaseMessage.Parse<DeathRecordSubmissionMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
-                            response = new Response { messageId = submissionMessage.MessageId, type = "VITAL_INTERSTATE_NEW_SUBMISSION", reference = submissionMessage.MessageId }; //there is no reference for interstate messages
+                            response = new Response { messageId = submissionMessage.MessageId, type = "VITAL_RECORD_NEW_SUBMISSION", reference = submissionMessage.MessageId }; //inbound vital record, not a response: no reference, so reference = messageId
                             bundleResponse.messages.Add(response);
                             break;
                         case "http://nchs.cdc.gov/vrdr_submission_update":
                             DeathRecordUpdateMessage submissionUpdateMessage = BaseMessage.Parse<DeathRecordUpdateMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
-                            response = new Response { messageId = submissionUpdateMessage.MessageId, type = "VITAL_INTERSTATE_UPDATE_SUBMISSION", reference = submissionUpdateMessage.MessageId }; //there is no reference for interstate messages
+                            response = new Response { messageId = submissionUpdateMessage.MessageId, type = "VITAL_RECORD_UPDATE_SUBMISSION", reference = submissionUpdateMessage.MessageId }; //inbound vital record, not a response: no reference, so reference = messageId
                             bundleResponse.messages.Add(response);
                             break;
                         case "http://nchs.cdc.gov/vrdr_submission_void":
                             DeathRecordVoidMessage submissionVoidMessage = BaseMessage.Parse<DeathRecordVoidMessage>((Hl7.Fhir.Model.Bundle)entry.Resource);
-                            response = new Response { messageId = submissionVoidMessage.MessageId, type = "VITAL_INTERSTATE_VOID_SUBMISSION", reference = submissionVoidMessage.MessageId }; //there is no reference for interstate messages
+                            response = new Response { messageId = submissionVoidMessage.MessageId, type = "VITAL_RECORD_VOID_SUBMISSION", reference = submissionVoidMessage.MessageId }; //inbound vital record, not a response: no reference, so reference = messageId
                             bundleResponse.messages.Add(response);
                             break;
                         default:
@@ -449,6 +454,42 @@ namespace VRDR.HTTP
             return MREString;
         }
 
+
+        // Inbound vital record (interstate / out-of-jurisdiction) death-record message bundle ->
+        // full 5000-char IJE string for the EDRS multi-insert import. Covers both
+        // vrdr_submission and vrdr_submission_update (DeathRecordUpdateMessage extends
+        // DeathRecordSubmissionMessage). A void message carries no DeathRecord payload, so it
+        // cannot produce an IJE -> logged and returns null.
+        private static string json2vitalije(Bundle messageBundle)
+        {
+            string IJEString = null;
+
+            try
+            {
+                DeathRecordSubmissionMessage message = BaseMessage.Parse<BaseMessage>((Hl7.Fhir.Model.Bundle)messageBundle) as DeathRecordSubmissionMessage;
+                if (message == null)
+                {
+                    Console.WriteLine($"*** Vital record message is not a submission/update (no DeathRecord payload); cannot produce IJE.");
+                    return null;
+                }
+                DeathRecord record = message.DeathRecord;
+                if (record == null)
+                {
+                    Console.WriteLine($"*** Vital record submission/update has no DeathRecord; cannot produce IJE.");
+                    return null;
+                }
+                // The submission's DeathRecord is a complete document, so its IJE rendering already
+                // carries DOD_YR / DSTATE / FILENO - unlike a coding message stub (cf. json2trx).
+                IJEMortality ije = new IJEMortality(record, false);
+                IJEString = ije.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"*** Error converting vital record message to IJE: {e}");
+            }
+
+            return IJEString;
+        }
 
         private static string json2trx(Bundle messageBundle)
         {
