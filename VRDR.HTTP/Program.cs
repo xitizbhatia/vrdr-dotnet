@@ -44,6 +44,10 @@ namespace VRDR.HTTP
 
         static void Main(string[] args)
         {
+            // Resolved from the VRDR_IJE_PROFILE environment variable (unset = standard 5000-char
+            // layout; "wa" = WA extended 5614-char layout). Logged so a misconfigured deployment
+            // is visible in the service log instead of silently converting with the wrong layout.
+            Console.WriteLine($"IJE layout profile: {IJEMortality.ActiveProfile} (record length {IJEMortality.RecordLength})");
             Program program = new Program();
             program.Start();
         }

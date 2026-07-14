@@ -480,7 +480,7 @@ namespace VRDR.CLI
                 DeathRecord d = new DeathRecord(File.ReadAllText(args[1]));
                 IJEMortality ije1 = new IJEMortality(d, false);
                 // Loop over every property (these are the fields); Order by priority
-                List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Location).ToList();
+                List<PropertyInfo> properties = IJEMortality.ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Location).ToList();
                 foreach (PropertyInfo property in properties)
                 {
                     // Grab the field attributes
@@ -607,7 +607,7 @@ namespace VRDR.CLI
 
                 int issues = 0;
                 int total = 0;
-                foreach (PropertyInfo property in typeof(IJEMortality).GetProperties())
+                foreach (PropertyInfo property in IJEMortality.ActiveIJEProperties())
                 {
                     string val1 = Convert.ToString(property.GetValue(ije1, null));
                     string val2 = Convert.ToString(property.GetValue(ije2, null));
@@ -701,7 +701,7 @@ namespace VRDR.CLI
             else if (args.Length == 2 && args[0] == "ije")
             {
                 string ijeString = File.ReadAllText(args[1]);
-                List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
+                List<PropertyInfo> properties = IJEMortality.ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
 
                 foreach (PropertyInfo property in properties)
                 {
@@ -732,7 +732,7 @@ namespace VRDR.CLI
                 IJEMortality ije2 = new IJEMortality(record2);
                 string ijeString2 = ije2.ToString();
 
-                List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
+                List<PropertyInfo> properties = IJEMortality.ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
 
                 int differences = 0;
 
@@ -782,7 +782,7 @@ namespace VRDR.CLI
                         var d = submission.DeathRecord;
                         IJEMortality ije1 = new IJEMortality(d, false);
                         // Loop over every property (these are the fields); Order by priority
-                        List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Location).ToList();
+                        List<PropertyInfo> properties = IJEMortality.ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Location).ToList();
                         foreach (PropertyInfo property in properties)
                         {
                             // Grab the field attributes
@@ -1264,7 +1264,7 @@ namespace VRDR.CLI
 
             int namePadding = ije1name.Length > ije2name.Length ? ije1name.Length : ije2name.Length;
 
-            List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
+            List<PropertyInfo> properties = IJEMortality.ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Field).ToList();
 
             int differences = 0;
 

@@ -44,6 +44,24 @@ namespace VRDR
         }
     }
 
+    /// <summary>Property attribute declaring which IJE layout profile a field belongs to.
+    /// Fields WITHOUT this attribute are part of every profile. Fields WITH it are only
+    /// read/written when <c>IJEMortality.ActiveProfile</c> matches, so two profiles may
+    /// define different fields over the same character positions (e.g. the WA fields
+    /// occupy the standard layout's PLACE/BLANK placeholder area).</summary>
+    [System.AttributeUsage(System.AttributeTargets.Property)]
+    public class IJEProfile : System.Attribute
+    {
+        /// <summary>Profile this field belongs to (see <c>IJEMortality.Profiles</c>).</summary>
+        public string Profile;
+
+        /// <summary>Constructor.</summary>
+        public IJEProfile(string profile)
+        {
+            this.Profile = profile;
+        }
+    }
+
     /// <summary>A "wrapper" class to convert between a FHIR based <c>DeathRecord</c> and
     /// a record in IJE Mortality format. Each property of this class corresponds exactly
     /// with a field in the IJE Mortality format. The getters convert from the embedded
@@ -129,6 +147,111 @@ namespace VRDR
         /// <summary>FHIR based death record.</summary>
         private DeathRecord record;
 
+        /// <summary>Known IJE layout profile names.</summary>
+        public static class Profiles
+        {
+            /// <summary>Standard NCHS/STEVE 5000 character layout (default).</summary>
+            public const string Standard = "standard";
+
+            /// <summary>WA extended 5614 character layout: the PLACE/BLANK placeholder area is
+            /// replaced by injury address/zip fields and informant fields extend past 5000.</summary>
+            public const string WA = "wa";
+        }
+
+        /// <summary>Total IJE record length per profile. Declared (not computed from the fields)
+        /// so ToString() output length is stable even if a profile's last field ends short of it.</summary>
+        private static readonly Dictionary<string, int> ProfileRecordLengths = new Dictionary<string, int>
+        {
+            { Profiles.Standard, 5000 },
+            { Profiles.WA, 5614 },
+        };
+
+        /// <summary>Active profile backing field. Initialized once per process from the
+        /// VRDR_IJE_PROFILE environment variable; unset/empty means the standard layout.</summary>
+        private static string activeProfile = NormalizeProfile(Environment.GetEnvironmentVariable("VRDR_IJE_PROFILE"));
+
+        /// <summary>Cache of the properties active under the current profile.</summary>
+        private static List<PropertyInfo> activeProperties = null;
+
+        /// <summary>The active IJE layout profile. Process-wide: one process speaks one IJE dialect.
+        ///
+        /// HOW TO SET THE PROFILE (per deployment, not per request):
+        /// - Set the environment variable VRDR_IJE_PROFILE before the process starts.
+        ///   Unset/empty  -> "standard" (5000-char NCHS/STEVE layout) — the default; KS/AR/TN
+        ///   deployments need NO configuration.
+        ///   "wa"         -> WA extended 5614-char layout (injury address/zip + informant fields).
+        ///   Any other value throws at startup so a typo cannot silently convert with the wrong layout.
+        /// - Windows service/scheduled-task deployments (e.g. the WA box): add
+        ///       set VRDR_IJE_PROFILE=wa
+        ///   in the launcher .bat above the "dotnet FhirDeathRecord.HTTP.dll" line.
+        /// - VRDR.HTTP logs "IJE layout profile: ..." at startup — check the service log to confirm
+        ///   which layout a deployment is running.
+        /// - Tests may assign this property directly (see VRDR.Tests/IJEProfile_Should.cs), but only
+        ///   before/between conversions — never mid-record.</summary>
+        public static string ActiveProfile
+        {
+            get
+            {
+                return activeProfile;
+            }
+            set
+            {
+                string normalized = NormalizeProfile(value);
+                if (normalized != activeProfile)
+                {
+                    activeProfile = normalized;
+                    activeProperties = null;
+                }
+            }
+        }
+
+        /// <summary>Validates and normalizes a profile name; null/blank means standard.</summary>
+        private static string NormalizeProfile(string profile)
+        {
+            if (String.IsNullOrWhiteSpace(profile))
+            {
+                return Profiles.Standard;
+            }
+            string normalized = profile.Trim().ToLower();
+            if (!ProfileRecordLengths.ContainsKey(normalized))
+            {
+                throw new ArgumentException($"Unknown IJE profile '{profile}'; known profiles: {String.Join(", ", ProfileRecordLengths.Keys)}");
+            }
+            return normalized;
+        }
+
+        /// <summary>IJE record length of the active profile.</summary>
+        public static int RecordLength
+        {
+            get
+            {
+                return ProfileRecordLengths[activeProfile];
+            }
+        }
+
+        /// <summary>The IJE field properties active under the current profile: properties with no
+        /// IJEProfile attribute plus those whose attribute matches. Anything reflecting over the
+        /// IJE layout (parse, ToString, CLI field listings) must use this instead of
+        /// <c>typeof(IJEMortality).GetProperties()</c> so inactive fields are not read or written.</summary>
+        public static List<PropertyInfo> ActiveIJEProperties()
+        {
+            if (activeProperties == null)
+            {
+                activeProperties = typeof(IJEMortality).GetProperties()
+                    .Where(p =>
+                    {
+                        if (p.GetCustomAttribute<IJEField>() == null)
+                        {
+                            return false; // not an IJE field (e.g. the static profile properties)
+                        }
+                        IJEProfile profile = p.GetCustomAttribute<IJEProfile>();
+                        return profile == null || profile.Profile == activeProfile;
+                    })
+                    .ToList();
+            }
+            return activeProperties;
+        }
+
         /// <summary>IJE data lookup helper. Thread-safe singleton!</summary>
         private MortalityData dataLookup = MortalityData.Instance;
 
@@ -160,12 +283,12 @@ namespace VRDR
             {
                 throw new ArgumentException("IJE string cannot be null.");
             }
-            if (ije.Length < 5000)
+            if (ije.Length < RecordLength)
             {
-                ije = ije.PadRight(5000, ' ');
+                ije = ije.PadRight(RecordLength, ' ');
             }
-            // Loop over every property (these are the fields); Order by priority
-            List<PropertyInfo> properties = typeof(IJEMortality).GetProperties().ToList().OrderBy(p => p.GetCustomAttribute<IJEField>().Priority).ToList();
+            // Loop over every property active under the current profile (these are the fields); Order by priority
+            List<PropertyInfo> properties = ActiveIJEProperties().OrderBy(p => p.GetCustomAttribute<IJEField>().Priority).ToList();
             foreach (PropertyInfo property in properties)
             {
                 // Grab the field attributes
@@ -193,11 +316,11 @@ namespace VRDR
         /// <summary>Converts the internal <c>DeathRecord</c> into an IJE string.</summary>
         public override string ToString()
         {
-            // Start with empty IJE Mortality record
-            StringBuilder ije = new StringBuilder(new String(' ', 5000), 5000);
+            // Start with empty IJE Mortality record at the active profile's length
+            StringBuilder ije = new StringBuilder(new String(' ', RecordLength), RecordLength);
 
-            // Loop over every property (these are the fields)
-            foreach (PropertyInfo property in typeof(IJEMortality).GetProperties())
+            // Loop over every property active under the current profile (these are the fields)
+            foreach (PropertyInfo property in ActiveIJEProperties())
             {
                 // Grab the field value
                 string field = Convert.ToString(property.GetValue(this, null));
@@ -5475,6 +5598,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 1</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(248, 4430, 1, "Blank for One-Byte Field 1", "PLACE1_1", 1)]
         public string PLACE1_1
         {
@@ -5489,6 +5613,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 2</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(249, 4431, 1, "Blank for One-Byte Field 2", "PLACE1_2", 1)]
         public string PLACE1_2
         {
@@ -5503,6 +5628,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 3</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(250, 4432, 1, "Blank for One-Byte Field 3", "PLACE1_3", 1)]
         public string PLACE1_3
         {
@@ -5517,6 +5643,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 4</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(251, 4433, 1, "Blank for One-Byte Field 4", "PLACE1_4", 1)]
         public string PLACE1_4
         {
@@ -5531,6 +5658,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 5</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(252, 4434, 1, "Blank for One-Byte Field 5", "PLACE1_5", 1)]
         public string PLACE1_5
         {
@@ -5545,6 +5673,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for One-Byte Field 6</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(253, 4435, 1, "Blank for One-Byte Field 6", "PLACE1_6", 1)]
         public string PLACE1_6
         {
@@ -5559,6 +5688,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for Eight-Byte Field 1</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(254, 4436, 8, "Blank for Eight-Byte Field 1", "PLACE8_1", 1)]
         public string PLACE8_1
         {
@@ -5573,6 +5703,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for Eight-Byte Field 2</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(255, 4444, 8, "Blank for Eight-Byte Field 2", "PLACE8_2", 1)]
         public string PLACE8_2
         {
@@ -5587,6 +5718,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for Eight-Byte Field 3</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(256, 4452, 8, "Blank for Eight-Byte Field 3", "PLACE8_3", 1)]
         public string PLACE8_3
         {
@@ -5601,6 +5733,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for Twenty-Byte Field</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(257, 4460, 20, "Blank for Twenty-Byte Field", "PLACE20", 1)]
         public string PLACE20
         {
@@ -5615,6 +5748,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for future expansion</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(258, 4480, 250, "Blank for future expansion", "BLANK2", 1)]
         public string BLANK2
         {
@@ -5630,6 +5764,7 @@ namespace VRDR
         }
 
         /// <summary>Blank for Jurisdictional Use Only</summary>
+        [IJEProfile(IJEMortality.Profiles.Standard)]
         [IJEField(259, 4730, 271, "Blank for Jurisdictional Use Only", "BLANK3", 1)]
         public string BLANK3
         {
@@ -5655,6 +5790,142 @@ namespace VRDR
             set
             {
                 LeftJustified_Set("MARITAL_DESCRIP", "MaritalStatusLiteral", value);
+            }
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////
+        //
+        // WA extended-layout fields (IJEProfile "wa", record length 5614). These occupy the
+        // standard layout's PLACE/BLANK placeholder area (4430+) and extend past position
+        // 5000; they are only active when IJEMortality.ActiveProfile == Profiles.WA.
+        //
+        /////////////////////////////////////////////////////////////////////////////////
+        /// <summary>Injury Address Line 1</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(260, 4430, 128, "Injury Address Line 1", "INJRY_ADDR1", 1)]
+        public string INJRY_ADDR1
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INJRY_ADDR1", "InjuryLocationAddress", "address", "line1", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INJRY_ADDR1", "InjuryLocationAddress", "address", "line1", false, value);
+                }
+            }
+        }
+
+        /// <summary>Injury Zipcode</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(261, 4558, 10, "Injury Zipcode", "INJRY_ZIP9", 1)]
+        public string INJRY_ZIP9
+        {
+            get
+            {
+                return Dictionary_Geo_Get("INJRY_ZIP9", "InjuryLocationAddress", "address", "zip", false);
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    Dictionary_Geo_Set("INJRY_ZIP9", "InjuryLocationAddress", "address", "zip", false, value);
+                }
+            }
+        }
+
+        /// <summary>Informant Given Name</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(262, 4568, 200, "Informant Given Name", "INFO_GIVEN_NME", 1)]
+        public string INFO_GIVEN_NME
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_GIVEN_NME", "InformantGivenName");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_GIVEN_NME", "InformantGivenName", value);
+            }
+        }
+
+        /// <summary>Informant Family Name</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(263, 4768, 100, "Informant Family Name", "INFO_LST_NME", 1)]
+        public string INFO_LST_NME
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_LST_NME", "InformantFamilyName");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_LST_NME", "InformantFamilyName", value);
+            }
+        }
+
+        /// <summary>Informant Address One Line</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(264, 4868, 512, "Informant Address One Line", "INFO_ADDR_ONE_LINE", 1)]
+        public string INFO_ADDR_ONE_LINE
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_ADDR_ONE_LINE", "InformantAddressOneLine");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_ADDR_ONE_LINE", "InformantAddressOneLine", value);
+            }
+        }
+
+        /// <summary>Informant City</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(265, 5380, 112, "Informant City", "INFO_CITY", 1)]
+        public string INFO_CITY
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_CITY", "InformantAddressCity");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_CITY", "InformantAddressCity", value);
+            }
+        }
+
+        /// <summary>Informant State</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(266, 5492, 112, "Informant State", "INFO_STATE", 1)]
+        public string INFO_STATE
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_STATE", "InformantAddressState");
+            }
+            set
+            {
+                LeftJustified_Set("INFO_STATE", "InformantAddressState", value);
+            }
+        }
+
+        /// <summary>Informant Zip</summary>
+        [IJEProfile(IJEMortality.Profiles.WA)]
+        [IJEField(267, 5604, 10, "Informant Zip", "INFO_ZIP", 1)]
+        public string INFO_ZIP
+        {
+            get
+            {
+                return LeftJustified_Get("INFO_ZIP", "InformantAddressZip");
+            }
+            set
+            {
+                if (!String.IsNullOrWhiteSpace(value))
+                {
+                    LeftJustified_Set("INFO_ZIP", "InformantAddressZip", value);
+                }
             }
         }
     }

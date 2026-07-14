@@ -2851,9 +2851,18 @@ namespace VRDR
             }
             set
             {
-                Patient.ContactComponent component = new Patient.ContactComponent();
+                // Reuse the decedent's first contact component (shared with the Informant* properties)
+                // rather than adding a new one, so relationship and informant name/address stay on the
+                // same Patient.contact entry.
+                Patient.ContactComponent component = null;
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count()==0)))
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+
+                component = Decedent.Contact.FirstOrDefault();
                 component.Relationship.Add(DictToCodeableConcept(value));
-                Decedent.Contact.Add(component);
             }
         }
 
@@ -7304,6 +7313,254 @@ namespace VRDR
             }
         }
 
+        /// <summary>Informant's Given Name.</summary>
+        /// <value>the informant's given name</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantGivenName = "Joe";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantGivenName}");</para>
+        /// </example>
+        [Property("Informant Given Name", Property.Types.String, "Decedent Demographics", "Informant's Given Name.", true, IGURL.Decedent, true, 5)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantGivenName
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Name != null && contact.Name.Given != null && contact.Name.Given.Count() > 0)
+                    {
+                        return contact.Name.Given.ElementAt(0);
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                component = Decedent.Contact.FirstOrDefault();
+                HumanName name = component.Name;
+                if (name != null && !String.IsNullOrEmpty(value) && name.Use == HumanName.NameUse.Official)
+                {
+                    name.Given =  new string[] { value };
+                }
+                else if (!String.IsNullOrEmpty(value))
+                {
+                    name = new HumanName();
+                    name.Use = HumanName.NameUse.Official;
+                    name.Given = new string[] { value };
+                    component.Name = name;
+                }
+
+            }
+        }
+
+
+        /// <summary>Informant's Family Name.</summary>
+        /// <value>the informant's family name</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantFamilyName = "Smith";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantFamilyName}");</para>
+        /// </example>
+        [Property("Informant Family Name", Property.Types.String, "Decedent Demographics", "Informant's Family Name.", true, IGURL.Decedent, true, 5)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantFamilyName
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Name != null && contact.Name.Family != null)
+                    {
+                        return contact.Name.Family;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                component = Decedent.Contact.FirstOrDefault();
+                HumanName name = component.Name;
+                if (name != null && !String.IsNullOrEmpty(value) && name.Use == HumanName.NameUse.Official)
+                {
+                    name.Family = value;
+                }
+                else if (!String.IsNullOrEmpty(value))
+                {
+                    name = new HumanName();
+                    name.Use = HumanName.NameUse.Official;
+                    name.Family = value;
+                    component.Name = name;
+                }
+
+            }
+        }
+
+
+        /// <summary>Informant Address One Line.</summary>
+        /// <value>Informant Address. A address line representing the full informant address</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressOneLine = "100W Kyle St Washington 9801";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address in one line: {ExampleDeathRecord.InformantAddressOneLine}");</para>
+        /// </example>
+        [Property("Informant Address One Line", Property.Types.String, "Decedent Demographics", "Informant Address One Line.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressOneLine
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.Line != null && contact.Address.Line.Count()>0)
+                    {
+                        return contact.Address.Line.ElementAt(0);
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                Patient.ContactComponent component = null;
+
+                if (value == null && Decedent.Contact == null)
+                {
+                    return;
+                }
+                if (Decedent != null && (Decedent.Contact == null || (Decedent.Contact != null && Decedent.Contact.Count() == 0)))
+                {
+                    component = new Patient.ContactComponent();
+                    Decedent.Contact.Add(component);
+                }
+                Dictionary <string, string> address = new Dictionary<string, string>();
+                address.Add("addressLine1", value);
+                component = Decedent.Contact.FirstOrDefault();
+                component.Address = DictToAddress(address);
+            }
+        }
+
+        /// <summary>Informant Address City. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address City. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressCity = "Seattle";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address City: {ExampleDeathRecord.InformantAddressCity}");</para>
+        /// </example>
+        [Property("Informant Address City", Property.Types.String, "Decedent Demographics", "Informant Address City.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressCity
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.City != null)
+                    {
+                        return contact.Address.City;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
+            }
+        }
+
+
+        /// <summary>Informant Address State. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address State. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressState = "Washington";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address State: {ExampleDeathRecord.InformantAddressState}");</para>
+        /// </example>
+        [Property("Informant Address State", Property.Types.String, "Decedent Demographics", "Informant Address State.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressState
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.State != null)
+                    {
+                        return contact.Address.State;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
+            }
+        }
+
+
+
+        /// <summary>Informant Address Zip. Not used See InformantAddressOneLine.</summary>
+        /// <value>Informant Address Zip. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+        /// <example>
+        /// <para>// Setter:</para>
+        /// <para>ExampleDeathRecord.InformantAddressZip = "98701";</para>
+        /// <para>// Getter:</para>
+        /// <para>Console.WriteLine($"Informant's Address Zip: {ExampleDeathRecord.InformantAddressZip}");</para>
+        /// </example>
+        [Property("Informant Address Zip", Property.Types.String, "Decedent Demographics", "Informant Address Zip.", true, IGURL.Decedent, true, 24)]
+        [FHIRPath("Bundle.entry.resource.where($this is Patient)", "contact")]
+        public string InformantAddressZip
+        {
+            get
+            {
+                if (Decedent != null && Decedent.Contact != null)
+                {
+                    var contact = Decedent.Contact.FirstOrDefault();
+                    if (contact != null && contact.Address != null && contact.Address.PostalCode != null)
+                    {
+                        return contact.Address.PostalCode;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                return; //since this is not used. See comments above.
+            }
+        }
 
     }
 }

@@ -3298,6 +3298,66 @@
             <para>Console.WriteLine($"Tobacco Use: {ExampleDeathRecord.TobaccoUseHelper}");</para>
             </example>
         </member>
+        <member name="P:VRDR.DeathRecord.InformantGivenName">
+            <summary>Informant's Given Name.</summary>
+            <value>the informant's given name</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantGivenName = "Joe";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantGivenName}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantFamilyName">
+            <summary>Informant's Family Name.</summary>
+            <value>the informant's family name</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantFamilyName = "Smith";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Full Name: {ExampleDeathRecord.InformantFamilyName}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressOneLine">
+            <summary>Informant Address One Line.</summary>
+            <value>Informant Address. A address line representing the full informant address</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressOneLine = "100W Kyle St Washington 9801";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address in one line: {ExampleDeathRecord.InformantAddressOneLine}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressCity">
+            <summary>Informant Address City. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address City. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressCity = "Seattle";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address City: {ExampleDeathRecord.InformantAddressCity}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressState">
+            <summary>Informant Address State. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address State. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressState = "Washington";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address State: {ExampleDeathRecord.InformantAddressState}");</para>
+            </example>
+        </member>
+        <member name="P:VRDR.DeathRecord.InformantAddressZip">
+            <summary>Informant Address Zip. Not used See InformantAddressOneLine.</summary>
+            <value>Informant Address Zip. Not used See InformantAddressOneLine. For compatibility with WA specific IJE fields.</value>
+            <example>
+            <para>// Setter:</para>
+            <para>ExampleDeathRecord.InformantAddressZip = "98701";</para>
+            <para>// Getter:</para>
+            <para>Console.WriteLine($"Informant's Address Zip: {ExampleDeathRecord.InformantAddressZip}");</para>
+            </example>
+        </member>
         <member name="M:VRDR.DeathRecord.GetPartialDate(Hl7.Fhir.Model.Extension,System.String)">
             <summary>Getter helper for anything that uses PartialDateTime, allowing a particular date field (year, month, or day) to be read
             from the extension. Returns either a numeric date part, or -1 meaning explicitly unknown, or null meaning not specified.</summary>
@@ -3563,6 +3623,19 @@
         <member name="M:VRDR.IJEField.#ctor(System.Int32,System.Int32,System.Int32,System.String,System.String,System.Int32)">
             <summary>Constructor.</summary>
         </member>
+        <member name="T:VRDR.IJEProfile">
+            <summary>Property attribute declaring which IJE layout profile a field belongs to.
+            Fields WITHOUT this attribute are part of every profile. Fields WITH it are only
+            read/written when <c>IJEMortality.ActiveProfile</c> matches, so two profiles may
+            define different fields over the same character positions (e.g. the WA fields
+            occupy the standard layout's PLACE/BLANK placeholder area).</summary>
+        </member>
+        <member name="F:VRDR.IJEProfile.Profile">
+            <summary>Profile this field belongs to (see <c>IJEMortality.Profiles</c>).</summary>
+        </member>
+        <member name="M:VRDR.IJEProfile.#ctor(System.String)">
+            <summary>Constructor.</summary>
+        </member>
         <member name="T:VRDR.IJEMortality">
             <summary>A "wrapper" class to convert between a FHIR based <c>DeathRecord</c> and
             a record in IJE Mortality format. Each property of this class corresponds exactly
@@ -3606,6 +3679,56 @@
         </member>
         <member name="F:VRDR.IJEMortality.record">
             <summary>FHIR based death record.</summary>
+        </member>
+        <member name="T:VRDR.IJEMortality.Profiles">
+            <summary>Known IJE layout profile names.</summary>
+        </member>
+        <member name="F:VRDR.IJEMortality.Profiles.Standard">
+            <summary>Standard NCHS/STEVE 5000 character layout (default).</summary>
+        </member>
+        <member name="F:VRDR.IJEMortality.Profiles.WA">
+            <summary>WA extended 5614 character layout: the PLACE/BLANK placeholder area is
+            replaced by injury address/zip fields and informant fields extend past 5000.</summary>
+        </member>
+        <member name="F:VRDR.IJEMortality.ProfileRecordLengths">
+            <summary>Total IJE record length per profile. Declared (not computed from the fields)
+            so ToString() output length is stable even if a profile's last field ends short of it.</summary>
+        </member>
+        <member name="F:VRDR.IJEMortality.activeProfile">
+            <summary>Active profile backing field. Initialized once per process from the
+            VRDR_IJE_PROFILE environment variable; unset/empty means the standard layout.</summary>
+        </member>
+        <member name="F:VRDR.IJEMortality.activeProperties">
+            <summary>Cache of the properties active under the current profile.</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.ActiveProfile">
+             <summary>The active IJE layout profile. Process-wide: one process speaks one IJE dialect.
+            
+             HOW TO SET THE PROFILE (per deployment, not per request):
+             - Set the environment variable VRDR_IJE_PROFILE before the process starts.
+               Unset/empty  -> "standard" (5000-char NCHS/STEVE layout) — the default; KS/AR/TN
+               deployments need NO configuration.
+               "wa"         -> WA extended 5614-char layout (injury address/zip + informant fields).
+               Any other value throws at startup so a typo cannot silently convert with the wrong layout.
+             - Windows service/scheduled-task deployments (e.g. the WA box): add
+                   set VRDR_IJE_PROFILE=wa
+               in the launcher .bat above the "dotnet FhirDeathRecord.HTTP.dll" line.
+             - VRDR.HTTP logs "IJE layout profile: ..." at startup — check the service log to confirm
+               which layout a deployment is running.
+             - Tests may assign this property directly (see VRDR.Tests/IJEProfile_Should.cs), but only
+               before/between conversions — never mid-record.</summary>
+        </member>
+        <member name="M:VRDR.IJEMortality.NormalizeProfile(System.String)">
+            <summary>Validates and normalizes a profile name; null/blank means standard.</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.RecordLength">
+            <summary>IJE record length of the active profile.</summary>
+        </member>
+        <member name="M:VRDR.IJEMortality.ActiveIJEProperties">
+            <summary>The IJE field properties active under the current profile: properties with no
+            IJEProfile attribute plus those whose attribute matches. Anything reflecting over the
+            IJE layout (parse, ToString, CLI field listings) must use this instead of
+            <c>typeof(IJEMortality).GetProperties()</c> so inactive fields are not read or written.</summary>
         </member>
         <member name="F:VRDR.IJEMortality.dataLookup">
             <summary>IJE data lookup helper. Thread-safe singleton!</summary>
@@ -4491,6 +4614,30 @@
         </member>
         <member name="P:VRDR.IJEMortality.MARITAL_DESCRIP">
             <summary>Marital Descriptor</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INJRY_ADDR1">
+            <summary>Injury Address Line 1</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INJRY_ZIP9">
+            <summary>Injury Zipcode</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_GIVEN_NME">
+            <summary>Informant Given Name</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_LST_NME">
+            <summary>Informant Family Name</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_ADDR_ONE_LINE">
+            <summary>Informant Address One Line</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_CITY">
+            <summary>Informant City</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_STATE">
+            <summary>Informant State</summary>
+        </member>
+        <member name="P:VRDR.IJEMortality.INFO_ZIP">
+            <summary>Informant Zip</summary>
         </member>
         <member name="T:VRDR.Mappings">
             <summary>Mappings between IJE and FHIR value sets</summary>
